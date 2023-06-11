@@ -1,0 +1,88 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-vst3",
+      "detail": "Build VST3 plugin",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "VST3",
+      ],
+      "presentation": {
+        "reveal": "always",
+      },
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/Builds/LinuxMakefile",
+      }
+    },
+    {
+      "label": "launch-projucer",
+      "detail": "Launch Projucer",
+      "type": "shell",
+      "command": "chmod +x ./Projucer && ./Projucer",
+      "presentation": {
+        "reveal": "silent",
+      },
+      "group": "none",
+      "options": {
+        "cwd": "${workspaceFolder}/../JUCE/extras/Projucer/Builds/LinuxMakefile/build",
+      },
+      "dependsOn": [
+        "build-projucer",
+      ]
+    },
+    {
+      "label": "build-projucer",
+      "detail": "Build Projucer",
+      "type": "shell",
+      "command": "make",
+      "presentation": {
+        "reveal": "silent",
+      },
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/../JUCE/extras/Projucer/Builds/LinuxMakefile",
+      },
+      "hide": true,
+    },
+    {
+      "label": "launch-audio-plugin-host",
+      "detail": "Launch AudioPluginHost",
+      "type": "shell",
+      "command": "chmod +x ./AudioPluginHost && ./AudioPluginHost",
+      "presentation": {
+        "reveal": "silent",
+      },
+      "group": "none",
+      "options": {
+        "cwd": "${workspaceFolder}/../JUCE/extras/AudioPluginHost/Builds/LinuxMakefile/build",
+      },
+      "linux": {
+        "options": {
+          "env": {
+            "GTK_DEBUG": "interactive",
+          },
+        },
+      },
+      "dependsOn": [
+        "build-audio-plugin-host",
+      ],
+    },
+    {
+      "label": "build-audio-plugin-host",
+      "detail": "Build AudioPluginHost",
+      "type": "shell",
+      "command": "make",
+      "presentation": {
+        "reveal": "silent",
+      },
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/../JUCE/extras/AudioPluginHost/Builds/LinuxMakefile",
+      },
+      "hide": true,
+    },
+  ]
+}
