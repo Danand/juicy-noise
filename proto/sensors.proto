@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package JuicyNoise;
+
+import "vector.proto";
+
+message Sensors {
+  float latitide = 1;
+  float longitude = 2;
+  Vector3 acceleration = 3;
+  Vector3 rotation = 4;
+  Vector3 gravity = 5;
+}
