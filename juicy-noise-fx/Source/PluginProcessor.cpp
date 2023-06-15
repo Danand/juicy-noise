@@ -9,6 +9,11 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+#include <grpcpp/completion_queue.h>
+
+#include "Generated/Proto/sensor-service.pb.h"
+#include "Generated/Proto/sensor-service.grpc.pb.h"
+
 //==============================================================================
 JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -30,6 +35,13 @@ JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
         666);
 
     addParameter(portParam);
+
+    JuicyNoise::SensorsService::AsyncService service;
+    grpc::ServerBuilder builder;
+    builder.AddListeningPort("0.0.0.0:50051", InsecureServerCredentials());
+    builder.RegisterService(&service);
+    auto cq = builder.AddCompletionQueue();
+    auto server = builder.BuildAndStart();
 }
 
 JuicynoisefxAudioProcessor::~JuicynoisefxAudioProcessor()

@@ -5,5 +5,13 @@
     "Normalisable",
     "subcomponents"
   ],
-  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
+  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "files.exclude": {
+    "Builds/**": true,
+    "JuceLibraryCode/**": true
+  },
+  "explorer.excludeGitIgnore": false,
+  "files.associations": {
+    "*.inc": "cpp"
+  }
 }

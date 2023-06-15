@@ -1,0 +1,11 @@
+{
+  "files.watcherExclude": {
+    "JUCE/**": true,
+  },
+  "search.exclude": {
+    "JUCE": true,
+  },
+  "files.exclude": {
+    "JUCE": true,
+  },
+}
