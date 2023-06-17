@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package JuicyNoise;
-
-message Vector3 {
-  float axisX = 1;
-  float axisY = 2;
-  float axisZ = 3;
-}

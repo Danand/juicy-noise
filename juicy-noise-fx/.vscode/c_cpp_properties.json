@@ -7,9 +7,6 @@
         "${workspaceFolder}/Source/Generated/Proto",
         "${workspaceFolder}/JuceLibraryCode",
         "${workspaceFolder}/../JUCE/modules",
-        "${workspaceFolder}/../build/grpc-installed/include",
-        "${workspaceFolder}/../build/protobuf/src/",
-        "${workspaceFolder}/../build/protobuf/third_party/abseil-cpp/"
       ],
       "defines": [],
       "compilerPath": "/usr/bin/gcc",
@@ -22,9 +19,6 @@
           "${workspaceFolder}/Source/**",
           "${workspaceFolder}/JuceLibraryCode/**",
           "${workspaceFolder}/../JUCE/modules/**",
-          "${workspaceFolder}/../build/grpc-installed/include/**",
-          "${workspaceFolder}/../build/protobuf/src/**",
-          "${workspaceFolder}/../build/protobuf/third_party/abseil-cpp/**"
         ],
         "limitSymbolsToIncludedHeaders": true,
         "databaseFilename": ""
