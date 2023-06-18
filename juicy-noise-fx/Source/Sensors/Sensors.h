@@ -1,3 +1,6 @@
+#ifndef SENSORS_H
+#define SENSORS_H
+
 struct Sensors {
     float longitude;
     float latitude;
@@ -11,3 +14,5 @@ struct Sensors {
     float gravityY;
     float gravityZ;
 };
+
+#endif

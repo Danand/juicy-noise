@@ -9,6 +9,8 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+#include "Sensors/SensorsServer.h"
+
 //==============================================================================
 JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -30,6 +32,10 @@ JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
         6660);
 
     addParameter(portParam);
+
+    SensorsServer sensorsServer(this->sensorsQueue);
+
+    sensorsServer.listen(*this->port);
 }
 
 JuicynoisefxAudioProcessor::~JuicynoisefxAudioProcessor()

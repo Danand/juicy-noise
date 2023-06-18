@@ -1,9 +1,11 @@
 #include <iostream>
+#include <string>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <string.h>
 #include <unistd.h>
 #include <thread>
+#include <chrono>
 
 #include "SensorsServer.h"
 
@@ -11,29 +13,10 @@ SensorsServer::SensorsServer(std::queue<Sensors> &sensorsQueue) {
   this->sensorsQueue = &sensorsQueue;
 }
 
-void SensorsServer::listen(uint16_t port) {
-  std::thread listening(
-    listenThreaded,
-    port,
-    std::ref(this->sensorsQueue));
-}
-
-void listenThreaded(uint16_t port, std::queue<Sensors> &sensorsQueue) {
-  int socket = openSocket(port);
-
-  float buffer[sizeof(Sensors) / sizeof(float)];
-
-  while (1) {
-    Sensors sensors;
-
-    if (readSensors(socket, buffer, sensors)) {
-      sensorsQueue.push(sensors);
-    }
-  }
-}
-
 int openSocket(uint16_t port) {
   int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+  std::cout << "Socket descriptor created: " << server_fd << std::endl;
 
   if (server_fd == 0) {
     perror("socket failed");
@@ -48,6 +31,8 @@ int openSocket(uint16_t port) {
     SO_REUSEADDR | SO_REUSEPORT,
     &opt,
     sizeof(opt));
+
+  std::cout << "sockopt = " << sockopt << std::endl;
 
   if (sockopt) {
     perror("setsockopt");
@@ -65,27 +50,39 @@ int openSocket(uint16_t port) {
     (struct sockaddr*)&address,
     sizeof(address));
 
+  std::cout << "bindResult = " << bindResult << std::endl;
+
   if (bindResult < 0) {
     perror("bind failed");
     exit(EXIT_FAILURE);
   }
 
-  if (listen(server_fd, 3) < 0) {
+  int listenResult = listen(server_fd, 3);
+
+  std::cout << "listenResult = " << listenResult << std::endl;
+
+  if (listenResult < 0) {
     perror("listen");
     exit(EXIT_FAILURE);
   }
 
   int addrlen = sizeof(address);
 
-  int socket = socket = accept(
+  std::cout << "addrlen = " << addrlen << std::endl;
+
+  int socket = accept(
     server_fd,
     (struct sockaddr*)&address,
     (socklen_t*)&addrlen);
+
+  std::cout << "socket = " << socket << std::endl;
 
   if (socket < 0) {
     perror("accept");
     exit(EXIT_FAILURE);
   }
+
+  std::puts("Got socket");
 
   return socket;
 }
@@ -101,3 +98,39 @@ int readSensors(
   return status;
 }
 
+void listenThreaded(uint16_t port, std::queue<Sensors> &sensorsQueue) {
+  std::puts("Listen in thread");
+
+  int socket = openSocket(port);
+
+  float buffer[sizeof(Sensors) / sizeof(float)];
+
+  std::puts("Start reading sensors");
+
+  while (1) {
+    Sensors sensors;
+
+    if (readSensors(socket, buffer, sensors)) {
+      sensorsQueue.push(sensors);
+      std::cout << "Enqueued Sensors:" << std::endl;
+      std::cout << "sensors.latitude = " << sensors.latitude << std::endl;
+      std::cout << "sensors.longitude = " << sensors.longitude << std::endl;
+    }
+  }
+}
+
+void SensorsServer::listen(uint16_t port) {
+  std::puts("Begin listening");
+
+  listenThreaded(port, *this->sensorsQueue);
+
+  // std::thread listening(
+  //   &listenThreaded,
+  //   port,
+  //   std::ref(*this->sensorsQueue));
+
+  //   listening.detach();
+
+  //   std::chrono::seconds sec(60);
+  //   std::this_thread::sleep_for(sec);
+}

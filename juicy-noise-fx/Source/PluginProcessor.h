@@ -8,7 +8,12 @@
 
 #pragma once
 
+#include <iostream>
+#include <queue>
+
 #include <JuceHeader.h>
+
+#include "Sensors/Sensors.h"
 
 //==============================================================================
 /**
@@ -57,6 +62,8 @@ public:
     void setStateInformation(const void* data, int sizeInBytes) override;
 
 private:
+    std::queue<Sensors> sensorsQueue;
+
     juce::AudioParameterInt* port;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JuicynoisefxAudioProcessor)

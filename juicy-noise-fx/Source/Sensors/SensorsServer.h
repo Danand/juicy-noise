@@ -1,3 +1,6 @@
+#ifndef SENSORS_SERVER_H
+#define SENSORS_SERVER_H
+
 #include <iostream>
 #include <queue>
 
@@ -11,3 +14,5 @@ public:
 private:
   std::queue<Sensors>* sensorsQueue;
 };
+
+#endif
