@@ -122,15 +122,10 @@ void listenThreaded(uint16_t port, std::queue<Sensors> &sensorsQueue) {
 void SensorsServer::listen(uint16_t port) {
   std::puts("Begin listening");
 
-  listenThreaded(port, *this->sensorsQueue);
+  std::thread listening(
+    &listenThreaded,
+    port,
+    std::ref(*this->sensorsQueue));
 
-  // std::thread listening(
-  //   &listenThreaded,
-  //   port,
-  //   std::ref(*this->sensorsQueue));
-
-  //   listening.detach();
-
-  //   std::chrono::seconds sec(60);
-  //   std::this_thread::sleep_for(sec);
+    listening.detach();
 }

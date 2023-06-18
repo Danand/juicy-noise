@@ -1,20 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="Hcet9U" name="juicy-noise-fx" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              projectLineFeed="&#10;" version="0.0.1" companyName="Danand"
-              companyWebsite="https://github.com/Danand/" pluginFormats="buildVST3"
-              pluginManufacturerCode="ReiD" pluginCode="Jcyn" pluginVST3Category="Distortion,Fx,Network,NoOfflineProcess"
-              maxBinaryFileSize="20971520" cppLanguageStandard="20" pluginDesc="Make some noise with Android device!"
+<JUCERPROJECT id="Hcet9U"
+              name="juicy-noise-fx"
+              projectType="audioplug"
+              useAppConfig="0"
+              addUsingNamespaceToJuceHeader="0"
+              displaySplashScreen="1"
+              jucerFormatVersion="1"
+              projectLineFeed="&#10;"
+              version="0.0.1"
+              companyName="Danand"
+              companyWebsite="https://github.com/Danand/"
+              pluginFormats="buildVST3"
+              pluginManufacturerCode="ReiD"
+              pluginCode="Jcyn"
+              pluginVST3Category="Distortion,Fx,Network,NoOfflineProcess"
+              maxBinaryFileSize="20971520"
+              cppLanguageStandard="20"
+              pluginDesc="Make some noise with Android device!"
               pluginName="JuicyNoiseFX">
   <MAINGROUP id="BMF8ml" name="juicy-noise-fx">
     <GROUP id="{6DF8F92A-B23A-E88B-1EE0-29233E53C0DC}" name="Source">
-      <FILE id="Qr3z8a" name="PluginProcessor.cpp" compile="1" resource="0"
-            file="Source/PluginProcessor.cpp"/>
-      <FILE id="Uarric" name="PluginProcessor.h" compile="0" resource="0"
-            file="Source/PluginProcessor.h"/>
-      <FILE id="MDn7ZO" name="PluginEditor.cpp" compile="1" resource="0"
-            file="Source/PluginEditor.cpp"/>
+      <GROUP id="{7CC1DC1D-82CA-8C36-D96E-14ACB12BE370}" name="Sensors">
+        <FILE id="eW4Vh7" name="Sensors.h" compile="0" resource="0" file="Source/Sensors/Sensors.h"/>
+        <FILE id="EMTsaK" name="SensorsServer.cpp" compile="1" resource="0" file="Source/Sensors/SensorsServer.cpp"/>
+        <FILE id="HcnvmM" name="SensorsServer.h" compile="0" resource="0" file="Source/Sensors/SensorsServer.h"/>
+      </GROUP>
+      <FILE id="Qr3z8a" name="PluginProcessor.cpp" compile="1" resource="0" file="Source/PluginProcessor.cpp"/>
+      <FILE id="Uarric" name="PluginProcessor.h" compile="0" resource="0" file="Source/PluginProcessor.h"/>
+      <FILE id="MDn7ZO" name="PluginEditor.cpp" compile="1" resource="0" file="Source/PluginEditor.cpp"/>
       <FILE id="SKs0sy" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
   </MAINGROUP>
