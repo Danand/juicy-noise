@@ -4,14 +4,8 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <unistd.h>
-#include <thread>
-#include <chrono>
 
 #include "SensorsServer.h"
-
-SensorsServer::SensorsServer(std::queue<Sensors> &sensorsQueue) {
-  this->sensorsQueue = &sensorsQueue;
-}
 
 int openSocket(uint16_t port) {
   int server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -87,45 +81,24 @@ int openSocket(uint16_t port) {
   return socket;
 }
 
-int readSensors(
-  int socket,
-  float (&buffer)[sizeof(Sensors) / sizeof(float)],
-  Sensors &sensors) {
-  int status = read(socket, buffer, sizeof(Sensors));
-
-  memcpy(&sensors, buffer, sizeof(Sensors));
-
-  return status;
-}
-
-void listenThreaded(uint16_t port, std::queue<Sensors> &sensorsQueue) {
-  std::puts("Listen in thread");
-
-  int socket = openSocket(port);
-
-  float buffer[sizeof(Sensors) / sizeof(float)];
-
-  std::puts("Start reading sensors");
-
-  while (1) {
-    Sensors sensors;
-
-    if (readSensors(socket, buffer, sensors)) {
-      sensorsQueue.push(sensors);
-      std::cout << "Enqueued Sensors:" << std::endl;
-      std::cout << "sensors.latitude = " << sensors.latitude << std::endl;
-      std::cout << "sensors.longitude = " << sensors.longitude << std::endl;
-    }
-  }
-}
-
 void SensorsServer::listen(uint16_t port) {
   std::puts("Begin listening");
+  this->socket = openSocket(port);
+}
 
-  std::thread listening(
-    &listenThreaded,
-    port,
-    std::ref(*this->sensorsQueue));
+void SensorsServer::readSensors(Sensors &sensors) {
+  int status = read(
+    this->socket,
+    &this->buffer,
+    sizeof(Sensors));
 
-    listening.detach();
+  if (status > 0) {
+    memcpy(
+      &sensors,
+      &this->buffer,
+      sizeof(Sensors));
+
+    std::cout << "sensors.latitude = " << sensors.latitude << std::endl;
+    std::cout << "sensors.longitude = " << sensors.longitude << std::endl;
+  }
 }

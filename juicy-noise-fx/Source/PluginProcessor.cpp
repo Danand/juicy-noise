@@ -33,9 +33,7 @@ JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
 
     addParameter(portParam);
 
-    SensorsServer sensorsServer(this->sensorsQueue);
-
-    sensorsServer.listen(*this->port);
+    sensorsServer->listen(6660);
 }
 
 JuicynoisefxAudioProcessor::~JuicynoisefxAudioProcessor()
@@ -145,6 +143,9 @@ bool JuicynoisefxAudioProcessor::isBusesLayoutSupported(const BusesLayout& layou
 
 void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
+    Sensors sensors;
+    sensorsServer->readSensors(sensors);
+
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();

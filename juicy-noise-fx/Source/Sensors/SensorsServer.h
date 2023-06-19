@@ -8,11 +8,12 @@
 
 class SensorsServer {
 public:
-  SensorsServer(std::queue<Sensors> &sensorsQueue);
   void listen(uint16_t port);
+  void readSensors(Sensors &sensors);
 
 private:
-  std::queue<Sensors>* sensorsQueue;
+  int socket;
+  float buffer[sizeof(Sensors) / sizeof(float)];
 };
 
 #endif

@@ -13,7 +13,7 @@
 
 #include <JuceHeader.h>
 
-#include "Sensors/Sensors.h"
+#include "Sensors/SensorsServer.h"
 
 //==============================================================================
 /**
@@ -62,7 +62,7 @@ public:
     void setStateInformation(const void* data, int sizeInBytes) override;
 
 private:
-    std::queue<Sensors> sensorsQueue;
+    SensorsServer* sensorsServer = new SensorsServer();
 
     juce::AudioParameterInt* port;
     //==============================================================================
