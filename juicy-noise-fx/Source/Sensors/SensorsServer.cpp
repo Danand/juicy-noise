@@ -8,28 +8,17 @@
 #include "SensorsServer.h"
 
 int openSocket(uint16_t port) {
-  int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+  int server_fd = socket(
+    AF_INET,
+    SOCK_STREAM,
+    0);
 
-  std::cout << "Socket descriptor created: " << server_fd << std::endl;
+  std::cout << "Server socket descriptor created: "
+            << server_fd
+            << std::endl;
 
   if (server_fd == 0) {
-    perror("socket failed");
-    exit(EXIT_FAILURE);
-  }
-
-  int opt = 1;
-
-  int sockopt = setsockopt(
-    server_fd,
-    SOL_SOCKET,
-    SO_REUSEADDR | SO_REUSEPORT,
-    &opt,
-    sizeof(opt));
-
-  std::cout << "sockopt = " << sockopt << std::endl;
-
-  if (sockopt) {
-    perror("setsockopt");
+    std::cerr << "Error: Failed to create socket descriptor" << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -39,66 +28,147 @@ int openSocket(uint16_t port) {
   address.sin_addr.s_addr = INADDR_ANY;
   address.sin_port = htons(port);
 
-  int bindResult = bind(
-    server_fd,
-    (struct sockaddr*)&address,
-    sizeof(address));
-
-  std::cout << "bindResult = " << bindResult << std::endl;
-
-  if (bindResult < 0) {
-    perror("bind failed");
-    exit(EXIT_FAILURE);
-  }
-
-  int listenResult = listen(server_fd, 3);
-
-  std::cout << "listenResult = " << listenResult << std::endl;
-
-  if (listenResult < 0) {
-    perror("listen");
-    exit(EXIT_FAILURE);
-  }
-
   int addrlen = sizeof(address);
 
-  std::cout << "addrlen = " << addrlen << std::endl;
+  int bind_result = bind(
+    server_fd,
+    (struct sockaddr*)&address,
+    addrlen);
 
-  int socket = accept(
+  if (bind_result < 0) {
+    std::cerr << "Error: Failed to bind any address with port "
+              << port
+              << std::endl;
+
+    exit(EXIT_FAILURE);
+  }
+
+  int listen_result = listen(server_fd, SOMAXCONN);
+
+  if (listen_result < 0) {
+    std::cerr << "Error: Failed to begin listening on port "
+              << port
+              << std::endl;
+
+    exit(EXIT_FAILURE);
+  }
+
+  int client_fd = accept(
     server_fd,
     (struct sockaddr*)&address,
     (socklen_t*)&addrlen);
 
-  std::cout << "socket = " << socket << std::endl;
+  if (client_fd < 0) {
+    std::cerr << "Error: Failed to accept client connection on port"
+              << port
+              << std::endl;
 
-  if (socket < 0) {
-    perror("accept");
     exit(EXIT_FAILURE);
   }
 
-  std::puts("Got socket");
+  std::cout << "Client socket descriptor created: "
+            << client_fd
+            << std::endl;
 
-  return socket;
+  return client_fd;
+}
+
+std::ostream& operator <<(std::ostream& stream, const Sensors& sensors) {
+    stream << "{"    << "\n";
+    stream << "    " << "\"longitude\": "     << sensors.longitude     << "," << "\n";
+    stream << "    " << "\"latitude\": "      << sensors.latitude      << "," << "\n";
+    stream << "    " << "\"accelerationX\": " << sensors.accelerationX << "," << "\n";
+    stream << "    " << "\"accelerationY\": " << sensors.accelerationY << "," << "\n";
+    stream << "    " << "\"accelerationZ\": " << sensors.accelerationZ << "," << "\n";
+    stream << "    " << "\"rotationX\": "     << sensors.rotationX     << "," << "\n";
+    stream << "    " << "\"rotationY\": "     << sensors.rotationY     << "," << "\n";
+    stream << "    " << "\"rotationZ\": "     << sensors.rotationZ     << "," << "\n";
+    stream << "    " << "\"gravityX\": "      << sensors.gravityX      << "," << "\n";
+    stream << "    " << "\"gravityY\": "      << sensors.gravityY      << "," << "\n";
+    stream << "    " << "\"gravityZ\": "      << sensors.gravityZ      << "\n";
+    stream << "}";
+
+    return stream;
+}
+
+void printSensorsContent(Sensors &sensors) {
+  std::cout << sensors << std::endl;
 }
 
 void SensorsServer::listen(uint16_t port) {
-  std::puts("Begin listening");
+  std::cout << "Begin listening" << std::endl;
   this->socket = openSocket(port);
 }
 
 void SensorsServer::readSensors(Sensors &sensors) {
-  int status = read(
-    this->socket,
-    &this->buffer,
+  if (this->socket < 0) {
+    std::cerr << "Warning: Client socket is already closed or not being opened yet" << std::endl;
+    return;
+  }
+
+  int bufferSize = sizeof(this->buffer);
+
+  int received_bytes_amount_total = 0;
+
+  do {
+    int received_bytes_amount = recv(
+      this->socket,
+      this->buffer + received_bytes_amount_total,
+      bufferSize - received_bytes_amount_total,
+      0);
+
+    if (received_bytes_amount < 0) {
+      std::cerr << "Error: Connection closed with error "
+                << received_bytes_amount
+                << "by a client "
+                << this->socket
+                << std::endl;
+
+      closeSocket();
+
+      return;
+    }
+
+    if (received_bytes_amount == 0) {
+      std::cerr << "Error: Connection closed by a client "
+                << this->socket
+                << std::endl;
+
+      closeSocket();
+
+      return;
+    }
+
+    received_bytes_amount_total += received_bytes_amount;
+
+  } while (received_bytes_amount_total < bufferSize);
+
+  std::cout << "Debug: Received "
+            << received_bytes_amount_total
+            << " bytes by client "
+            << this->socket
+            << std::endl;
+
+  if (received_bytes_amount_total != bufferSize) {
+
+    std::cerr << "Warning: Received incorrect amount of bytes, expected: "
+              << bufferSize
+              << ", actual: "
+              << received_bytes_amount_total
+              << std::endl;
+
+    return;
+  }
+
+  memcpy(
+    &sensors,
+    this->buffer,
     sizeof(Sensors));
 
-  if (status > 0) {
-    memcpy(
-      &sensors,
-      &this->buffer,
-      sizeof(Sensors));
+  printSensorsContent(sensors);
+}
 
-    std::cout << "sensors.latitude = " << sensors.latitude << std::endl;
-    std::cout << "sensors.longitude = " << sensors.longitude << std::endl;
-  }
+void SensorsServer::closeSocket() {
+  close(this->socket);
+  this->socket = -1;
 }

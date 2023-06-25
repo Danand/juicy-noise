@@ -10,10 +10,11 @@ class SensorsServer {
 public:
   void listen(uint16_t port);
   void readSensors(Sensors &sensors);
+  void closeSocket();
 
 private:
   int socket;
-  float buffer[sizeof(Sensors) / sizeof(float)];
+  char buffer[sizeof(Sensors)];
 };
 
 #endif
