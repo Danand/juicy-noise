@@ -6,11 +6,15 @@ package com.danand.juicynoise
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.location.Location
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -35,7 +39,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.text.isDigitsOnly
@@ -47,8 +50,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.io.DataOutputStream
 import java.net.Socket
 import java.nio.ByteBuffer
@@ -57,7 +58,21 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.random.Random
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), SensorEventListener {
+    private val sensorsState = mutableStateOf(Sensors())
+    private val isRunningState = mutableStateOf(false)
+
+    private lateinit var sensorManager: SensorManager
+
+    private var gyroscope: Sensor? = null
+    private var accelerometer: Sensor? = null
+    private var rotationVector: Sensor? = null
+    private var gravity: Sensor? = null
+    private var magneticField: Sensor? = null
+    private var light: Sensor? = null
+    private var pressure: Sensor? = null
+    private var proximity: Sensor? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -65,10 +80,20 @@ class MainActivity : ComponentActivity() {
 
         val locationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
+        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        rotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        gravity = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)
+        magneticField = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+        light = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
+        pressure = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE)
+        proximity = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
+
         setContent {
             JuicyNoiseTheme() {
                 val addressState = remember { createDefaultState() }
-                val isRunningState = remember { mutableStateOf(false) }
                 val errorState = remember { mutableStateOf<String?>(null) }
 
                 ColumnMain(
@@ -76,11 +101,83 @@ class MainActivity : ComponentActivity() {
                     addressState.port,
                     isRunningState,
                     errorState,
+                    sensorsState,
                     locationClient,
                 )
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+
+        sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager.registerListener(this, rotationVector, SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager.registerListener(this, gravity, SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager.registerListener(this, magneticField, SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager.registerListener(this, light, SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager.registerListener(this, pressure, SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager.registerListener(this, proximity, SensorManager.SENSOR_DELAY_NORMAL)
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        sensorManager.unregisterListener(this, gyroscope)
+        sensorManager.unregisterListener(this, accelerometer)
+        sensorManager.unregisterListener(this, rotationVector)
+        sensorManager.unregisterListener(this, gravity)
+        sensorManager.unregisterListener(this, magneticField)
+        sensorManager.unregisterListener(this, light)
+        sensorManager.unregisterListener(this, pressure)
+        sensorManager.unregisterListener(this, proximity)
+    }
+
+    override fun onSensorChanged(sensorEvent: SensorEvent?) {
+        if (sensorEvent == null) {
+            return
+        }
+
+        when (sensorEvent.sensor.type) {
+            Sensor.TYPE_GYROSCOPE-> {
+                sensorsState.value.angularSpeedX = sensorEvent.values[0]
+                sensorsState.value.angularSpeedY = sensorEvent.values[1]
+                sensorsState.value.angularSpeedZ = sensorEvent.values[2]
+            }
+            Sensor.TYPE_ACCELEROMETER -> {
+                sensorsState.value.accelerationX = sensorEvent.values[0]
+                sensorsState.value.accelerationY = sensorEvent.values[1]
+                sensorsState.value.accelerationZ = sensorEvent.values[2]
+            }
+            Sensor.TYPE_ROTATION_VECTOR -> {
+                sensorsState.value.rotationX = sensorEvent.values[0]
+                sensorsState.value.rotationY = sensorEvent.values[1]
+                sensorsState.value.rotationZ = sensorEvent.values[2]
+            }
+            Sensor.TYPE_GRAVITY -> {
+                sensorsState.value.gravityX = sensorEvent.values[0]
+                sensorsState.value.gravityY = sensorEvent.values[1]
+                sensorsState.value.gravityZ = sensorEvent.values[2]
+            }
+            Sensor.TYPE_MAGNETIC_FIELD -> {
+                sensorsState.value.magneticX = sensorEvent.values[0]
+                sensorsState.value.magneticY = sensorEvent.values[1]
+                sensorsState.value.magneticZ = sensorEvent.values[2]
+            }
+            Sensor.TYPE_LIGHT -> {
+                sensorsState.value.light = sensorEvent.values[0]
+            }
+            Sensor.TYPE_PRESSURE -> {
+                sensorsState.value.pressure = sensorEvent.values[0]
+            }
+            Sensor.TYPE_PROXIMITY -> {
+                sensorsState.value.proximity = sensorEvent.values[0]
+            }
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) { }
 }
 
 @Composable
@@ -89,7 +186,8 @@ fun ColumnMain(
     portState: MutableState<String>,
     isRunningState: MutableState<Boolean>,
     errorState: MutableState<String?>,
-    locationClient: FusedLocationProviderClient? = null,
+    sensorsState: MutableState<Sensors>,
+    locationClient: FusedLocationProviderClient,
 ) {
     Column(
         modifier = Modifier.padding(36.dp),
@@ -148,6 +246,7 @@ fun ColumnMain(
                 portState.value.toUShort(),
                 isRunningState,
                 errorState,
+                sensorsState,
                 locationClient,
             ) {
                 checkIsValidIp(ipState.value) &&
@@ -195,17 +294,26 @@ fun ButtonConnect(
     port: UShort,
     isRunningState: MutableState<Boolean>,
     errorState: MutableState<String?>,
-    locationClient: FusedLocationProviderClient?,
+    sensorsState: MutableState<Sensors>,
+    locationClient: FusedLocationProviderClient,
     validator: () -> Boolean
 ) {
     Button(
         onClick = {
+            isRunningState.value = true
+
+            runReadingLocation(
+                locationClient,
+                isRunningState,
+                sensorsState,
+            )
+
             startSendingSensors(
                 ip,
                 port,
                 isRunningState,
                 errorState,
-                locationClient,
+                sensorsState,
             )
         },
         colors = textButtonColors(
@@ -247,23 +355,6 @@ fun ButtonDisconnect(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun Preview() {
-    JuicyNoiseTheme {
-        val addressState = remember { createDefaultState() }
-        val isRunningState = remember { mutableStateOf(false) }
-        val errorState = remember { mutableStateOf<String?>(null) }
-
-        ColumnMain(
-            addressState.ip,
-            addressState.port,
-            isRunningState,
-            errorState,
-        )
-    }
-}
-
 fun createDefaultState(): AddressState = AddressState(
     ip = mutableStateOf("192.168.0.1"),
     port = mutableStateOf("6660"),
@@ -274,32 +365,37 @@ fun startSendingSensors(
     port: UShort,
     isRunningState: MutableState<Boolean>,
     errorState: MutableState<String?>,
-    locationClient: FusedLocationProviderClient?,
+    sensorsState: MutableState<Sensors>,
 ) {
     val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     scope.launch(Dispatchers.IO) {
-        isRunningState.value = true
-
         try {
             val socket = Socket(ip, port.toInt())
             val socketStream = socket.getOutputStream()
             val dataOutputStream = DataOutputStream(socketStream)
 
             while (isRunningState.value) {
-                val sensors: Sensors = readSensors(locationClient)
-
-                dataOutputStream.writeFloatWithLittleEndian(sensors.longitude)
-                dataOutputStream.writeFloatWithLittleEndian(sensors.latitude)
-                dataOutputStream.writeFloatWithLittleEndian(sensors.accelerationX)
-                dataOutputStream.writeFloatWithLittleEndian(sensors.accelerationY)
-                dataOutputStream.writeFloatWithLittleEndian(sensors.accelerationZ)
-                dataOutputStream.writeFloatWithLittleEndian(sensors.rotationX)
-                dataOutputStream.writeFloatWithLittleEndian(sensors.rotationY)
-                dataOutputStream.writeFloatWithLittleEndian(sensors.rotationZ)
-                dataOutputStream.writeFloatWithLittleEndian(sensors.gravityX)
-                dataOutputStream.writeFloatWithLittleEndian(sensors.gravityY)
-                dataOutputStream.writeFloatWithLittleEndian(sensors.gravityZ)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.longitude)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.latitude)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.angularSpeedX)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.angularSpeedY)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.angularSpeedZ)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.accelerationX)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.accelerationY)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.accelerationZ)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.rotationX)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.rotationY)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.rotationZ)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.gravityX)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.gravityY)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.gravityZ)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.magneticX)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.magneticY)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.magneticZ)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.light)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.pressure)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.proximity)
 
                 dataOutputStream.flush()
 
@@ -328,33 +424,28 @@ fun DataOutputStream.writeFloatWithLittleEndian(value: Float) {
     this.write(bytes)
 }
 
-suspend fun readSensors(locationClient: FusedLocationProviderClient? = null): Sensors {
-    val location: Location = readLocation(locationClient)
+fun runReadingLocation(
+    locationClient: FusedLocationProviderClient,
+    isRunningState: MutableState<Boolean>,
+    sensorsState: MutableState<Sensors>,
+) {
+    val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    val sensors = Sensors(
-        location.longitude.toFloat(),
-        location.latitude.toFloat(),
-        0f,
-        0f,
-        0f,
-        0f,
-        0f,
-        0f,
-        0f,
-        0f,
-        0f,
-    )
+    scope.launch(Dispatchers.Main) {
+        while (isRunningState.value) {
+            val location = readLocation(locationClient)
 
-    Log.d("JuicyNoise", Json.encodeToString(sensors))
+            sensorsState.value.longitude = location.longitude.toFloat()
+            sensorsState.value.latitude = location.latitude.toFloat()
 
-    return sensors
+            delay(100)
+        }
+    }
 }
 
 @SuppressLint("MissingPermission")
-suspend fun readLocation(locationClient: FusedLocationProviderClient? = null): Location = suspendCoroutine { continuation ->
-    val location = locationClient?.lastLocation ?: throw NullPointerException("Location is null")
-
-    location.addOnCompleteListener {
+suspend fun readLocation(locationClient: FusedLocationProviderClient): Location = suspendCoroutine { continuation ->
+    locationClient.lastLocation.addOnCompleteListener {
         if (it.exception == null) {
             continuation.resume(it.result!!)
         } else {
@@ -382,7 +473,7 @@ fun ensureAllPermissions(activity: Activity) {
         }
     }
 
-    val requestCode = Random.nextInt()
+    val requestCode = Random.nextInt(1, Int.MAX_VALUE)
 
     ActivityCompat.requestPermissions(
         activity,

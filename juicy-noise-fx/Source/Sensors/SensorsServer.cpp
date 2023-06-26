@@ -77,6 +77,9 @@ std::ostream& operator <<(std::ostream& stream, const Sensors& sensors) {
     stream << "{"    << "\n";
     stream << "    " << "\"longitude\": "     << sensors.longitude     << "," << "\n";
     stream << "    " << "\"latitude\": "      << sensors.latitude      << "," << "\n";
+    stream << "    " << "\"angularSpeedX\": " << sensors.angularSpeedX << "," << "\n";
+    stream << "    " << "\"angularSpeedY\": " << sensors.angularSpeedY << "," << "\n";
+    stream << "    " << "\"angularSpeedZ\": " << sensors.angularSpeedZ << "," << "\n";
     stream << "    " << "\"accelerationX\": " << sensors.accelerationX << "," << "\n";
     stream << "    " << "\"accelerationY\": " << sensors.accelerationY << "," << "\n";
     stream << "    " << "\"accelerationZ\": " << sensors.accelerationZ << "," << "\n";
@@ -85,7 +88,13 @@ std::ostream& operator <<(std::ostream& stream, const Sensors& sensors) {
     stream << "    " << "\"rotationZ\": "     << sensors.rotationZ     << "," << "\n";
     stream << "    " << "\"gravityX\": "      << sensors.gravityX      << "," << "\n";
     stream << "    " << "\"gravityY\": "      << sensors.gravityY      << "," << "\n";
-    stream << "    " << "\"gravityZ\": "      << sensors.gravityZ      << "\n";
+    stream << "    " << "\"gravityZ\": "      << sensors.gravityZ      << "," << "\n";
+    stream << "    " << "\"magneticX\": "     << sensors.magneticX     << "," << "\n";
+    stream << "    " << "\"magneticY\": "     << sensors.magneticY     << "," << "\n";
+    stream << "    " << "\"magneticZ\": "     << sensors.magneticZ     << "," << "\n";
+    stream << "    " << "\"light\": "         << sensors.light         << "," << "\n";
+    stream << "    " << "\"pressure\": "      << sensors.pressure      << "," << "\n";
+    stream << "    " << "\"proximity\": "     << sensors.proximity     << "\n";
     stream << "}";
 
     return stream;

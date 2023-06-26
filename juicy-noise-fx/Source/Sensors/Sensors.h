@@ -4,6 +4,9 @@
 struct Sensors {
     float longitude;
     float latitude;
+    float angularSpeedX;
+    float angularSpeedY;
+    float angularSpeedZ;
     float accelerationX;
     float accelerationY;
     float accelerationZ;
@@ -13,6 +16,12 @@ struct Sensors {
     float gravityX;
     float gravityY;
     float gravityZ;
+    float magneticX;
+    float magneticY;
+    float magneticZ;
+    float light;
+    float pressure;
+    float proximity;
 };
 
 #endif
