@@ -6,6 +6,8 @@
   ==============================================================================
 */
 
+#include <iostream>
+
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
@@ -33,7 +35,7 @@ JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
 
     addParameter(portParam);
 
-    sensorsServer->listen(6660);
+    SensorsServer* sensorsServer = new SensorsServer(6660, this->sensorsQueue, mutex);
 }
 
 JuicynoisefxAudioProcessor::~JuicynoisefxAudioProcessor()
@@ -143,8 +145,13 @@ bool JuicynoisefxAudioProcessor::isBusesLayoutSupported(const BusesLayout& layou
 
 void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    Sensors sensors;
-    sensorsServer->readSensors(sensors);
+    std::lock_guard<std::mutex> lock(mutex);
+
+    if (sensorsQueue.empty() == false) {
+        Sensors sensors = sensorsQueue.front();
+        std::cout << sensors << std::endl;
+        sensorsQueue.pop();
+    }
 
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();

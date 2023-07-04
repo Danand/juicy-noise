@@ -1,20 +1,48 @@
-#ifndef SENSORS_SERVER_H
-#define SENSORS_SERVER_H
+#pragma once
 
 #include <iostream>
 #include <queue>
 
+#include <JuceHeader.h>
+
 #include "Sensors.h"
 
-class SensorsServer {
+using SensorsQueue = std::queue<Sensors>;
+using SensorsBuffer = char[SIZEOF_SENSORS];
+
+typedef int SocketDescriptor;
+typedef uint16_t SocketPort;
+
+constexpr int THREAD_STOP_DURATION = 1000;
+constexpr int THREAD_DELAY = 100;
+constexpr SocketDescriptor EMPTY_SOCKET_DESCRIPTOR = -1;
+
+class SensorsServer : public juce::Thread {
+
 public:
-  void listen(uint16_t port);
-  void readSensors(Sensors &sensors);
-  void closeSocket();
+  SensorsServer(SocketPort port, SensorsQueue& sensorsQueue, std::mutex& mutex)
+    : juce::Thread("SensorsServer"),
+      port(port),
+      sensorsQueue(sensorsQueue),
+      mutex(mutex) {
+    startThread();
+  }
+
+  void stop();
+
+  ~SensorsServer() override {
+    stop();
+    stopThread(THREAD_STOP_DURATION);
+  }
+
+  void run() override;
 
 private:
-  int socket;
-  char buffer[sizeof(Sensors)];
+  SocketPort port;
+  std::mutex& mutex;
+  SensorsQueue& sensorsQueue;
+  SocketDescriptor server_socket_descriptor;
+  SocketDescriptor client_socket_descriptor;
+  SensorsBuffer sensorsBuffer;
+  Sensors sensors;
 };
-
-#endif

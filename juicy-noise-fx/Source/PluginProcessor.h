@@ -18,7 +18,7 @@
 //==============================================================================
 /**
 */
-class JuicynoisefxAudioProcessor  : public juce::AudioProcessor
+class JuicynoisefxAudioProcessor : public juce::AudioProcessor
                             #if JucePlugin_Enable_ARA
                              , public juce::AudioProcessorARAExtension
                             #endif
@@ -62,9 +62,12 @@ public:
     void setStateInformation(const void* data, int sizeInBytes) override;
 
 private:
-    SensorsServer* sensorsServer = new SensorsServer();
+    bool isCancelled;
+    std::mutex mutex;
+    std::queue<Sensors> sensorsQueue;
 
-    juce::AudioParameterInt* port;
+    juce::AudioParameterInt* portParameter;
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JuicynoisefxAudioProcessor)
 };
