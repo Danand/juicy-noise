@@ -7,11 +7,39 @@
 */
 
 #include <iostream>
+#include <cmath>
+#include <random>
+#include <chrono>
+#include <cstdlib>
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
 #include "Sensors/SensorsServer.h"
+
+class Stopwatch {
+public:
+    Stopwatch(std::string title) {
+        this->title = title;
+        this->startTime = std::chrono::high_resolution_clock::now();
+    }
+
+    ~Stopwatch() {
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime);
+
+        std::cout << "[Stopwatch] "
+                  << this->title
+                  << " elapsed "
+                  << duration.count()
+                  << " ns."
+                  << std::endl;
+    }
+
+private:
+    std::chrono::_V2::system_clock::time_point startTime;
+    std::string title;
+};
 
 //==============================================================================
 JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
@@ -143,42 +171,91 @@ bool JuicynoisefxAudioProcessor::isBusesLayoutSupported(const BusesLayout& layou
 }
 #endif
 
+float calcMagnitude(float x, float y, float z) {
+    return sqrt(x * x + y * y + z * z);
+}
+
+float strip_int(float value) {
+    float dummy;
+    return std::modf(value, &dummy);
+}
+
+int sumDigits(int number) {
+    int sum = 0;
+
+    while (number != 0) {
+        int digit = number % 10;
+        sum += digit;
+        number /= 10;
+    }
+
+    return sum;
+}
+
+float randomFloat(float from, float to) {
+    return from + static_cast<float>(rand()) / (RAND_MAX / (to - from));
+}
+
+double unclampedSin(float value) {
+    const float twoPi = 2.0 * M_PI;
+    value = fmod(value, twoPi);
+    return std::sin(value);
+}
+
+double sawtooth(float frequency, float amplitude, float time) {
+    float period = 1.0f / frequency;
+    float phase = static_cast<float>(fmod(time, period)) / period;
+
+    float value = (2.0f * phase - 1.0f) * amplitude;
+
+    return value;
+}
+
 void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    std::lock_guard<std::mutex> lock(mutex);
+    mutex.lock();
 
     if (sensorsQueue.empty() == false) {
-        Sensors sensors = sensorsQueue.front();
-        std::cout << sensors << std::endl;
+        this->sensorsCurrent = sensorsQueue.front();
         sensorsQueue.pop();
     }
 
+    mutex.unlock();
+
+    float sensorsMagnitude = this->sensorsCurrent.magnitude();
+
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
+
+    auto numSamples = buffer.getNumSamples();
+
+    auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
     {
-        buffer.clear(i, 0, buffer.getNumSamples());
+        buffer.clear(i, 0, numSamples);
     }
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer(channel);
+    float* channelDataLeft = buffer.getWritePointer(0);
+    float* channelDataRight = buffer.getWritePointer(1);
 
-        // ..do something to the data...
+    for (int sample = 0; sample < numSamples; ++sample)
+    {
+        if (sensorsMagnitude <= 0.0001f) {
+            channelDataLeft[sample] = 0.0f;
+            channelDataRight[sample] = 0.0f;
+            continue;
+        }
+
+        float baseValue = (channelDataLeft[sample] * 0.5f) + (channelDataRight[sample] * 0.5f);
+        float baseValueDeamplified = baseValue * 0.25f;
+        float time = sample / (numSamples * 1.0f);
+        float sawWave = sawtooth(sensorsMagnitude, 0.5f, time);
+        float finalValue = baseValueDeamplified + sawWave;
+        float finalValueNormalized = finalValueNormalized > 0.99f ? 0.95f : finalValueNormalized;
+
+        channelDataLeft[sample] = finalValue;
+        channelDataRight[sample] = finalValue;
     }
 }
 

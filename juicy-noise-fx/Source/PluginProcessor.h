@@ -65,6 +65,7 @@ private:
     bool isCancelled;
     std::mutex mutex;
     std::queue<Sensors> sensorsQueue;
+    Sensors sensorsCurrent;
 
     juce::AudioParameterInt* portParameter;
 

@@ -3,7 +3,9 @@
     "juce",
     "Juicynoisefx",
     "Normalisable",
-    "subcomponents"
+    "sined",
+    "subcomponents",
+    "transiented"
   ],
   "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
   "files.exclude": {
@@ -88,6 +90,7 @@
     "typeindex": "cpp",
     "typeinfo": "cpp",
     "valarray": "cpp",
-    "variant": "cpp"
+    "variant": "cpp",
+    "*.mm": "cpp"
   }
 }

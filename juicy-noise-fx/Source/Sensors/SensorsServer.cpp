@@ -114,7 +114,7 @@ void SensorsServer::run() {
         if (received_bytes_amount < 0) {
           std::cerr << "Error: Connection closed with error "
                     << received_bytes_amount
-                    << "by a client "
+                    << " by a client "
                     << this->client_socket_descriptor
                     << std::endl;
 
@@ -137,11 +137,11 @@ void SensorsServer::run() {
 
       } while (received_bytes_amount_total < bufferSize);
 
-      std::cout << "Debug: Received "
-                << received_bytes_amount_total
-                << " bytes by client "
-                << this->client_socket_descriptor
-                << std::endl;
+      // std::cout << "Debug: Received "
+      //           << received_bytes_amount_total
+      //           << " bytes by client "
+      //           << this->client_socket_descriptor
+      //           << std::endl;
 
       if (received_bytes_amount_total != bufferSize) {
         std::cerr << "Warning: Received incorrect amount of bytes, expected: "
@@ -158,11 +158,13 @@ void SensorsServer::run() {
         this->sensorsBuffer,
         SIZEOF_SENSORS);
 
-      std::cout << sensors << std::endl;
+      //std::cout << sensors << std::endl;
 
-      std::lock_guard<std::mutex> lock(mutex);
+      mutex.lock();
 
       this->sensorsQueue.push(sensors);
+
+      mutex.unlock();
 
       wait(THREAD_DELAY);
     }
