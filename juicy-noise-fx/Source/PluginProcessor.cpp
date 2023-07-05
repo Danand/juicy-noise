@@ -54,14 +54,32 @@ JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
                        )
 #endif
 {
-    auto* portParam = new juce::AudioParameterInt(
-        "port",
+    this->portParameter = new juce::AudioParameterInt(
+        "portParameter",
         "Port",
         0,
         65535,
         6660);
 
-    addParameter(portParam);
+    addParameter(this->portParameter);
+
+    this->freqMinParameter = new juce::AudioParameterInt(
+        "freqMinParameter",
+        "Low Hz",
+        20,
+        22000,
+        35);
+
+    addParameter(freqMinParameter);
+
+    this->freqMaxParameter = new juce::AudioParameterInt(
+        "freqMaxParameter",
+        "High Hz",
+        20,
+        22000,
+        666);
+
+    addParameter(this->freqMaxParameter);
 
     SensorsServer* sensorsServer = new SensorsServer(6660, this->sensorsQueue, mutex);
 }
@@ -211,6 +229,13 @@ double sawtooth(float frequency, float amplitude, float time) {
     return value;
 }
 
+float map(float value, float fromStart, float fromEnd, float toStart, float toEnd) {
+    float normalizedValue = (value - fromStart) / (fromEnd - fromStart);
+    float mappedValue = normalizedValue * (toEnd - toStart) + toStart;
+
+    return mappedValue;
+}
+
 void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     mutex.lock();
@@ -223,6 +248,14 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, 
     mutex.unlock();
 
     float sensorsMagnitude = this->sensorsCurrent.magnitude();
+
+    this->sensorsMagnitudeMax = sensorsMagnitude > this->sensorsMagnitudeMax
+        ? sensorsMagnitude
+        : this->sensorsMagnitudeMax;
+
+    this->sensorsMagnitudeMin = sensorsMagnitude < this->sensorsMagnitudeMin
+        ? sensorsMagnitude
+        : this->sensorsMagnitudeMin;
 
     juce::ScopedNoDenormals noDenormals;
 
@@ -250,9 +283,16 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, 
         float baseValue = (channelDataLeft[sample] * 0.5f) + (channelDataRight[sample] * 0.5f);
         float baseValueDeamplified = baseValue * 0.25f;
         float time = sample / (numSamples * 1.0f);
-        float sawWave = sawtooth(sensorsMagnitude, 0.5f, time);
+
+        float frequency = map(
+            sensorsMagnitude,
+            this->sensorsMagnitudeMin,
+            this->sensorsMagnitudeMax,
+            freqMinParameter->get(),
+            freqMaxParameter->get());
+
+        float sawWave = sawtooth(frequency, 0.5f, time);
         float finalValue = baseValueDeamplified + sawWave;
-        float finalValueNormalized = finalValueNormalized > 0.99f ? 0.95f : finalValueNormalized;
 
         channelDataLeft[sample] = finalValue;
         channelDataRight[sample] = finalValue;

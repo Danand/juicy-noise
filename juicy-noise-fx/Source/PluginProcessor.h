@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <queue>
+#include <limits>
 
 #include <JuceHeader.h>
 
@@ -62,12 +63,19 @@ public:
     void setStateInformation(const void* data, int sizeInBytes) override;
 
 private:
+    const float FLOAT_MIN_VALUE = std::numeric_limits<float>::min();
+    const float FLOAT_MAX_VALUE = std::numeric_limits<float>::max();
+
     bool isCancelled;
     std::mutex mutex;
     std::queue<Sensors> sensorsQueue;
     Sensors sensorsCurrent;
+    float sensorsMagnitudeMin = FLOAT_MAX_VALUE;
+    float sensorsMagnitudeMax = FLOAT_MIN_VALUE;
 
     juce::AudioParameterInt* portParameter;
+    juce::AudioParameterInt* freqMinParameter;
+    juce::AudioParameterInt* freqMaxParameter;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JuicynoisefxAudioProcessor)
