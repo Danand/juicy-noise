@@ -34,27 +34,54 @@ int randomInt(int from, int to)
     return from + rand() / (RAND_MAX / (to - from));
 }
 
-double sawtooth(float frequency, float amplitude, float time)
+float sawtoothWave(float time, int frequency, float amplitude, float phaseShift)
 {
-    const float period = 1.0f / frequency;
-    const float phase = static_cast<float>(fmod(time, period)) / period;
+    float period = 1.0f / frequency;
+    float cycles = (time - phaseShift) / period;
+    float normalizedTime = cycles - std::floor(cycles);
+    float amplitudeAtTime = amplitude * (2.0f * normalizedTime - 1.0f);
 
-    const float value = (2.0f * (phase * (phase * 0.5f)) - 1.0f) * amplitude;
-
-    return value;
+    return amplitudeAtTime;
 }
 
-float sineWave(const int &sampleRate, float frequency, float amplitude, float time)
+float squareWave(float time, int frequency, float amplitude, float phaseShift)
 {
-    constexpr float doublePi = 2 * M_PI;
+    float period = 1.0f / frequency;
+    float cycles = (time - phaseShift) / period;
+    float normalizedTime = cycles - std::floor(cycles);
+    float amplitudeAtTime = (normalizedTime < 0.5f) ? amplitude : -amplitude;
 
-    const float deltaThetaMultiplier = doublePi / static_cast<float>(sampleRate);
-    const float deltaTheta = frequency * deltaThetaMultiplier;
+    return amplitudeAtTime;
+}
 
-    const float theta = fmod(time * deltaTheta, doublePi);
-    const float currentSample = amplitude * sinf(theta);
+float sineWave(float time, int frequency, float amplitude, float phaseShift)
+{
+    float period = 1.0f / frequency;
+    float cycles = (time - phaseShift) / period;
+    float angle = 2.0f * M_PI * cycles;
+    float amplitudeAtTime = amplitude * std::sin(angle);
 
-    return fmod(currentSample, 1.0f);
+    return amplitudeAtTime;
+}
+
+float exoticWave(float time, int frequency, float amplitude, float phaseShift)
+{
+    float period = 1.0f / frequency;
+    float cycles = (time - phaseShift) / period;
+    float normalizedTime = cycles - std::floor(cycles);
+
+    float amplitudeAtTime = 0.0f;
+
+    if (normalizedTime <= 0.5f)
+    {
+        amplitudeAtTime = 2.0f * amplitude * normalizedTime;
+    }
+    else
+    {
+        amplitudeAtTime = 2.0f * amplitude * (1.0f - normalizedTime);
+    }
+
+    return amplitudeAtTime;
 }
 
 float map(float value, float fromStart, float fromEnd, float toStart, float toEnd)
