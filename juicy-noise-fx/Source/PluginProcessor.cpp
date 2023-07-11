@@ -12,8 +12,11 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+#include "Listeners/PortListener.h"
+#include "Sensors/Sensors.h"
 #include "Sensors/SensorsServer.h"
-#include "Utils.h"
+#include "Sensors/SensorsServerTypes.h"
+#include "Utils/Math.h"
 
 //==============================================================================
 JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
@@ -34,6 +37,10 @@ JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
         0,
         65535,
         6660);
+
+    this->port = this->portParameter->get();
+    this->portListener = new PortListener(this->port);
+    this->portParameter->addListener(this->portListener);
 
     addParameter(this->portParameter);
 
@@ -57,7 +64,7 @@ JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
 
     SensorsServer* sensorsServer = new SensorsServer(
         this->latency,
-        6660,
+        this->port,
         this->sensorsQueue,
         sensorsMutex);
 }
@@ -156,6 +163,10 @@ void JuicynoisefxAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
+    this->portParameter->removeListener(this->portListener);
+
+    delete this->portListener;
+
     if (this->lastBuffer != nullptr)
     {
         delete[] this->lastBuffer;

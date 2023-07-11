@@ -11,8 +11,9 @@
 #include <atomic>
 
 #include "SensorsServer.h"
+#include "SensorsServerTypes.h"
 
-SocketDescriptor openServerSocketDescriptor(SocketPort port, sockaddr_in &address)
+SocketDescriptor openServerSocketDescriptor(const SocketPort &port, sockaddr_in &address)
 {
     SocketDescriptor serverSocketDescriptor = socket(
         AF_INET,
@@ -95,6 +96,17 @@ void SensorsServer::run()
 {
     while (!threadShouldExit())
     {
+        if (this->portConnected != this->port)
+        {
+            std::cerr << "Warning: Receiving port changed from "
+                      << this->portConnected
+                      << " to "
+                      << this->port
+                      << std::endl;
+
+            stop();
+        }
+
         sockaddr_in address;
 
         if (this->serverSocketDescriptor < 0)
@@ -107,6 +119,11 @@ void SensorsServer::run()
         {
             std::cerr << "Warning: Client socket did not opened yet" << std::endl;
             this->clientSocketDescriptor = openClientSocketDescriptor(this->serverSocketDescriptor, address);
+
+            if (this->clientSocketDescriptor > 0)
+            {
+                this->portConnected = this->port;
+            }
         }
 
         if (this->clientSocketDescriptor < 0)

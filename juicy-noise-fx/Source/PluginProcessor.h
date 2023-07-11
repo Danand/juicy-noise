@@ -15,7 +15,10 @@
 
 #include <JuceHeader.h>
 
+#include "Listeners/PortListener.h"
+#include "Sensors/Sensors.h"
 #include "Sensors/SensorsServer.h"
+#include "Sensors/SensorsServerTypes.h"
 
 //==============================================================================
 /**
@@ -67,7 +70,8 @@ private:
     static constexpr int MIN_FREQ = 20;
     static constexpr int MAX_FREQ = 12000;
 
-    bool isCancelled;
+    PortListener* portListener;
+    SocketPort port;
     std::mutex sensorsMutex;
     std::queue<Sensors> sensorsQueue;
     Sensors sensors;
