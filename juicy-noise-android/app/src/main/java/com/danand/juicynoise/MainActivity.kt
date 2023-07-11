@@ -14,7 +14,16 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.location.Location
+import android.net.ConnectivityManager
+import android.net.ConnectivityManager.NetworkCallback
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.Bundle
+import android.telephony.SignalStrength
+import android.telephony.TelephonyCallback
+import android.telephony.TelephonyManager
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -35,7 +44,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -45,6 +53,7 @@ import androidx.core.text.isDigitsOnly
 import com.danand.juicynoise.ui.theme.JuicyNoiseTheme
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -56,11 +65,16 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlin.math.floor
 import kotlin.random.Random
 
 class MainActivity : ComponentActivity(), SensorEventListener {
     private val sensorsState = mutableStateOf(Sensors())
     private val isRunningState = mutableStateOf(false)
+    private val addressState = createAddressState()
+    private val errorState = mutableStateOf<String?>(null)
+    private val audioBufferSizeState = mutableStateOf(AudioBufferSize.SIZE_256)
+    private val sampleRateState = mutableStateOf(44100)
 
     private lateinit var sensorManager: SensorManager
 
@@ -80,6 +94,37 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
         val locationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
+        val telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+
+        val telephonyCallback = object : TelephonyCallback(), TelephonyCallback.SignalStrengthsListener {
+            override fun onSignalStrengthsChanged(signalStrength: SignalStrength) {
+                sensorsState.value.cellSignalStrength = signalStrength.cellSignalStrengths.maxOf { it.dbm }.toFloat()
+            }
+        }
+
+        telephonyManager.registerTelephonyCallback(this.mainExecutor, telephonyCallback)
+
+        val connectivityManager  = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        val networkCallback = object : NetworkCallback() {
+            override fun onCapabilitiesChanged(
+                network: Network,
+                networkCapabilities: NetworkCapabilities
+            ) {
+                super.onCapabilitiesChanged(network, networkCapabilities)
+
+                if (networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+                    sensorsState.value.wifiSignalStrength = networkCapabilities.signalStrength.toFloat()
+                }
+            }
+        }
+
+        val request = NetworkRequest.Builder()
+                                    .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                                    .build()
+
+        connectivityManager.registerNetworkCallback(request, networkCallback)
+
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
@@ -92,16 +137,15 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         proximity = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
 
         setContent {
-            JuicyNoiseTheme() {
-                val addressState = remember { createDefaultState() }
-                val errorState = remember { mutableStateOf<String?>(null) }
-
+            JuicyNoiseTheme {
                 ColumnMain(
                     addressState.ip,
                     addressState.port,
                     isRunningState,
                     errorState,
                     sensorsState,
+                    audioBufferSizeState,
+                    sampleRateState,
                     locationClient,
                 )
             }
@@ -183,10 +227,12 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 @Composable
 fun ColumnMain(
     ipState: MutableState<String>,
-    portState: MutableState<String>,
+    portState: MutableState<UShort>,
     isRunningState: MutableState<Boolean>,
     errorState: MutableState<String?>,
     sensorsState: MutableState<Sensors>,
+    audioBufferSizeState: MutableState<AudioBufferSize>,
+    sampleRateState: MutableState<Int>,
     locationClient: FusedLocationProviderClient,
 ) {
     Column(
@@ -208,18 +254,17 @@ fun ColumnMain(
                 keyboardType = KeyboardType.NumberPassword
             ),
             isError = checkIsValidIp(ipState.value) == false,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(72.dp),
+            modifier = Modifier.fillMaxWidth()
+                               .height(72.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            value = portState.value,
+            value = portState.value.toString(),
             onValueChange = {
                 if (checkIsValidPort(it)) {
-                    portState.value = it
+                    portState.value = it.toUShort()
                 }
             },
             label = {
@@ -228,10 +273,32 @@ fun ColumnMain(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
             ),
-            isError = checkIsValidPort(portState.value) == false,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(72.dp),
+            modifier = Modifier.fillMaxWidth()
+                               .height(72.dp),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = sampleRateState.value.toString(),
+            onValueChange = {
+                sampleRateState.value = it.toInt()
+            },
+            label = {
+                Text("Sample Rate")
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+            ),
+            modifier = Modifier.fillMaxWidth()
+                               .height(72.dp),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        AudioBufferSizeTextField(
+            selectedBufferSize = audioBufferSizeState.value,
+            onItemSelected = { audioBufferSizeState.value = it }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -243,14 +310,15 @@ fun ColumnMain(
         } else {
             ButtonConnect(
                 ipState.value,
-                portState.value.toUShort(),
+                portState.value,
                 isRunningState,
                 errorState,
                 sensorsState,
+                audioBufferSizeState,
+                sampleRateState,
                 locationClient,
             ) {
-                checkIsValidIp(ipState.value) &&
-                checkIsValidPort(portState.value)
+                checkIsValidIp(ipState.value)
             }
         }
 
@@ -295,6 +363,8 @@ fun ButtonConnect(
     isRunningState: MutableState<Boolean>,
     errorState: MutableState<String?>,
     sensorsState: MutableState<Sensors>,
+    audioBufferSizeState: MutableState<AudioBufferSize>,
+    sampleRateState: MutableState<Int>,
     locationClient: FusedLocationProviderClient,
     validator: () -> Boolean
 ) {
@@ -314,6 +384,8 @@ fun ButtonConnect(
                 isRunningState,
                 errorState,
                 sensorsState,
+                audioBufferSizeState,
+                sampleRateState
             )
         },
         colors = textButtonColors(
@@ -355,9 +427,9 @@ fun ButtonDisconnect(
     }
 }
 
-fun createDefaultState(): AddressState = AddressState(
+fun createAddressState(): AddressState = AddressState(
     ip = mutableStateOf("192.168.0.1"),
-    port = mutableStateOf("6660"),
+    port = mutableStateOf(6660u),
 )
 
 fun startSendingSensors(
@@ -366,6 +438,8 @@ fun startSendingSensors(
     isRunningState: MutableState<Boolean>,
     errorState: MutableState<String?>,
     sensorsState: MutableState<Sensors>,
+    audioBufferSizeState: MutableState<AudioBufferSize>,
+    sampleRateState: MutableState<Int>,
 ) {
     val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -374,6 +448,8 @@ fun startSendingSensors(
             val socket = Socket(ip, port.toInt())
             val socketStream = socket.getOutputStream()
             val dataOutputStream = DataOutputStream(socketStream)
+
+            val gson = GsonBuilder().setPrettyPrinting().create()
 
             while (isRunningState.value) {
                 dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.longitude)
@@ -396,10 +472,16 @@ fun startSendingSensors(
                 dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.light)
                 dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.pressure)
                 dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.proximity)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.cellSignalStrength)
+                dataOutputStream.writeFloatWithLittleEndian(sensorsState.value.wifiSignalStrength)
 
                 dataOutputStream.flush()
 
-                delay(100)
+                val delayDuration = floor(audioBufferSizeState.value.value / (sampleRateState.value / 1000.0)).toLong()
+
+                Log.d("Sensors", gson.toJson(sensorsState.value))
+
+                delay(delayDuration)
             }
 
             dataOutputStream.close()
@@ -438,7 +520,7 @@ fun runReadingLocation(
             sensorsState.value.longitude = location.longitude.toFloat()
             sensorsState.value.latitude = location.latitude.toFloat()
 
-            delay(100)
+            delay(5000)
         }
     }
 }
@@ -461,7 +543,8 @@ fun ensureAllPermissions(activity: Activity) {
 
     val packageInfo: PackageInfo = packageManager.getPackageInfo(
         packageName,
-        PackageManager.GET_PERMISSIONS)
+        PackageManager.GET_PERMISSIONS,
+    )
 
     val ungrantedPermissions = mutableListOf<String>()
 
@@ -478,5 +561,6 @@ fun ensureAllPermissions(activity: Activity) {
     ActivityCompat.requestPermissions(
         activity,
         ungrantedPermissions.toTypedArray(),
-        requestCode)
+        requestCode,
+    )
 }

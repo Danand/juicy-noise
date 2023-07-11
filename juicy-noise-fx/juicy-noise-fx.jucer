@@ -26,11 +26,15 @@
         <FILE id="EMTsaK" name="SensorsServer.cpp" compile="1" resource="0" file="Source/Sensors/SensorsServer.cpp"/>
         <FILE id="HcnvmM" name="SensorsServer.h" compile="0" resource="0" file="Source/Sensors/SensorsServer.h"/>
       </GROUP>
-      <FILE id="Qr3z8a" name="PluginProcessor.cpp" compile="1" resource="0" file="Source/PluginProcessor.cpp"/>
-      <FILE id="Uarric" name="PluginProcessor.h" compile="0" resource="0" file="Source/PluginProcessor.h"/>
-      <FILE id="MDn7ZO" name="PluginEditor.cpp" compile="1" resource="0" file="Source/PluginEditor.cpp"/>
+      <FILE id="Qr3z8a" name="PluginProcessor.cpp" compile="1" resource="0"
+            file="Source/PluginProcessor.cpp"/>
+      <FILE id="Uarric" name="PluginProcessor.h" compile="0" resource="0"
+            file="Source/PluginProcessor.h"/>
+      <FILE id="MDn7ZO" name="PluginEditor.cpp" compile="1" resource="0"
+            file="Source/PluginEditor.cpp"/>
       <FILE id="SKs0sy" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
+    <FILE id="CnbDv6" name="Utils.h" compile="0" resource="0" file="Source/Utils.h"/>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
   <EXPORTFORMATS>

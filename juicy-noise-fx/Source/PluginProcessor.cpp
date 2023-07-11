@@ -7,51 +7,25 @@
 */
 
 #include <iostream>
-#include <cmath>
-#include <random>
-#include <chrono>
-#include <cstdlib>
+#include <atomic>
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
 #include "Sensors/SensorsServer.h"
-
-class Stopwatch {
-public:
-    Stopwatch(std::string title) {
-        this->title = title;
-        this->startTime = std::chrono::high_resolution_clock::now();
-    }
-
-    ~Stopwatch() {
-        auto endTime = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime);
-
-        std::cout << "[Stopwatch] "
-                  << this->title
-                  << " elapsed "
-                  << duration.count()
-                  << " ns."
-                  << std::endl;
-    }
-
-private:
-    std::chrono::_V2::system_clock::time_point startTime;
-    std::string title;
-};
+#include "Utils.h"
 
 //==============================================================================
 JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
     : AudioProcessor(BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                       #if ! JucePlugin_IsSynth
-                        .withInput("Input",  juce::AudioChannelSet::stereo(), true)
-                       #endif
-                        .withOutput("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                       )
+#if ! JucePlugin_IsMidiEffect
+    #if ! JucePlugin_IsSynth
+        .withInput("Input",  juce::AudioChannelSet::stereo(), true)
+    #endif
+        .withOutput("Output", juce::AudioChannelSet::stereo(), true)
+#endif
+    )
 #endif
 {
     this->portParameter = new juce::AudioParameterInt(
@@ -66,8 +40,8 @@ JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
     this->freqMinParameter = new juce::AudioParameterInt(
         "freqMinParameter",
         "Low Hz",
-        20,
-        22000,
+        MIN_FREQ,
+        MAX_FREQ,
         35);
 
     addParameter(freqMinParameter);
@@ -75,13 +49,17 @@ JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
     this->freqMaxParameter = new juce::AudioParameterInt(
         "freqMaxParameter",
         "High Hz",
-        20,
-        22000,
+        MIN_FREQ,
+        MAX_FREQ,
         666);
 
     addParameter(this->freqMaxParameter);
 
-    SensorsServer* sensorsServer = new SensorsServer(6660, this->sensorsQueue, mutex);
+    SensorsServer* sensorsServer = new SensorsServer(
+        this->latency,
+        6660,
+        this->sensorsQueue,
+        sensorsMutex);
 }
 
 JuicynoisefxAudioProcessor::~JuicynoisefxAudioProcessor()
@@ -91,34 +69,34 @@ JuicynoisefxAudioProcessor::~JuicynoisefxAudioProcessor()
 //==============================================================================
 const juce::String JuicynoisefxAudioProcessor::getName() const
 {
-   return "JuicyNoiseFX";
+    return "JuicyNoiseFX";
 }
 
 bool JuicynoisefxAudioProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
+#if JucePlugin_WantsMidiInput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool JuicynoisefxAudioProcessor::producesMidi() const
 {
-   #if JucePlugin_ProducesMidiOutput
+#if JucePlugin_ProducesMidiOutput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool JuicynoisefxAudioProcessor::isMidiEffect() const
 {
-   #if JucePlugin_IsMidiEffect
+#if JucePlugin_IsMidiEffect
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 double JuicynoisefxAudioProcessor::getTailLengthSeconds() const
@@ -153,14 +131,36 @@ void JuicynoisefxAudioProcessor::changeProgramName(int index, const juce::String
 //==============================================================================
 void JuicynoisefxAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    this->sampleRate = static_cast<int>(floor(sampleRate));
+    this->audioBufferSize = samplesPerBlock;
+
+    int latency = static_cast<int>(floor(samplesPerBlock / (sampleRate / 1000.0)));
+
+    this->latency.store(latency);
+
+    if (this->lastBuffer != nullptr)
+    {
+        delete[] this->lastBuffer;
+        this->lastBuffer = nullptr;
+    }
+
+    this->lastBuffer = new float[samplesPerBlock];
+
+    std::fill(
+        this->lastBuffer,
+        this->lastBuffer + samplesPerBlock,
+        0.0f);
 }
 
 void JuicynoisefxAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
+    if (this->lastBuffer != nullptr)
+    {
+        delete[] this->lastBuffer;
+        this->lastBuffer = nullptr;
+    }
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -179,92 +179,36 @@ bool JuicynoisefxAudioProcessor::isBusesLayoutSupported(const BusesLayout& layou
         return false;
 
     // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
+    #if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
-   #endif
+    #endif
 
     return true;
   #endif
 }
 #endif
 
-float calcMagnitude(float x, float y, float z) {
-    return sqrt(x * x + y * y + z * z);
-}
-
-float strip_int(float value) {
-    float dummy;
-    return std::modf(value, &dummy);
-}
-
-int sumDigits(int number) {
-    int sum = 0;
-
-    while (number != 0) {
-        int digit = number % 10;
-        sum += digit;
-        number /= 10;
-    }
-
-    return sum;
-}
-
-float randomFloat(float from, float to) {
-    return from + static_cast<float>(rand()) / (RAND_MAX / (to - from));
-}
-
-double unclampedSin(float value) {
-    const float twoPi = 2.0 * M_PI;
-    value = fmod(value, twoPi);
-    return std::sin(value);
-}
-
-double sawtooth(float frequency, float amplitude, float time) {
-    float period = 1.0f / frequency;
-    float phase = static_cast<float>(fmod(time, period)) / period;
-
-    float value = (2.0f * phase - 1.0f) * amplitude;
-
-    return value;
-}
-
-float map(float value, float fromStart, float fromEnd, float toStart, float toEnd) {
-    float normalizedValue = (value - fromStart) / (fromEnd - fromStart);
-    float mappedValue = normalizedValue * (toEnd - toStart) + toStart;
-
-    return mappedValue;
-}
-
-void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages)
 {
-    mutex.lock();
+    sensorsMutex.lock();
 
-    if (sensorsQueue.empty() == false) {
-        this->sensorsCurrent = sensorsQueue.front();
+    if (sensorsQueue.empty() == false)
+    {
+        this->sensors = sensorsQueue.front();
         sensorsQueue.pop();
     }
 
-    mutex.unlock();
-
-    float sensorsMagnitude = this->sensorsCurrent.magnitude();
-
-    this->sensorsMagnitudeMax = sensorsMagnitude > this->sensorsMagnitudeMax
-        ? sensorsMagnitude
-        : this->sensorsMagnitudeMax;
-
-    this->sensorsMagnitudeMin = sensorsMagnitude < this->sensorsMagnitudeMin
-        ? sensorsMagnitude
-        : this->sensorsMagnitudeMin;
+    sensorsMutex.unlock();
 
     juce::ScopedNoDenormals noDenormals;
 
-    auto numSamples = buffer.getNumSamples();
+    int numSamples = buffer.getNumSamples();
 
-    auto totalNumInputChannels = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
+    int totalNumInputChannels = getTotalNumInputChannels();
+    int totalNumOutputChannels = getTotalNumOutputChannels();
 
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+    for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
     {
         buffer.clear(i, 0, numSamples);
     }
@@ -274,28 +218,22 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, 
 
     for (int sample = 0; sample < numSamples; ++sample)
     {
-        if (sensorsMagnitude <= 0.0001f) {
-            channelDataLeft[sample] = 0.0f;
-            channelDataRight[sample] = 0.0f;
-            continue;
+        double time = this->samplesCountInSecond / this->sampleRate;
+
+        float outputLeft = channelDataLeft[sample];
+        float outputRight = channelDataRight[sample];
+
+        channelDataLeft[sample] = outputLeft;
+        channelDataRight[sample] = outputRight;
+
+        this->lastBuffer[sample] = outputLeft;
+
+        this->samplesCountInSecond++;
+
+        if (this->samplesCountInSecond > this->sampleRate)
+        {
+            this->samplesCountInSecond = 0;
         }
-
-        float baseValue = (channelDataLeft[sample] * 0.5f) + (channelDataRight[sample] * 0.5f);
-        float baseValueDeamplified = baseValue * 0.25f;
-        float time = sample / (numSamples * 1.0f);
-
-        float frequency = map(
-            sensorsMagnitude,
-            this->sensorsMagnitudeMin,
-            this->sensorsMagnitudeMax,
-            freqMinParameter->get(),
-            freqMaxParameter->get());
-
-        float sawWave = sawtooth(frequency, 0.5f, time);
-        float finalValue = baseValueDeamplified + sawWave;
-
-        channelDataLeft[sample] = finalValue;
-        channelDataRight[sample] = finalValue;
     }
 }
 

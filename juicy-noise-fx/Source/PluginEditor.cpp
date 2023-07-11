@@ -10,9 +10,9 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-JuicynoisefxAudioProcessorEditor::JuicynoisefxAudioProcessorEditor(JuicynoisefxAudioProcessor& p)
-    : AudioProcessorEditor(&p),
-      audioProcessor(p)
+JuicynoisefxAudioProcessorEditor::JuicynoisefxAudioProcessorEditor(JuicynoisefxAudioProcessor& processor)
+    : AudioProcessorEditor(&processor),
+      audioProcessor(processor)
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -23,7 +23,7 @@ JuicynoisefxAudioProcessorEditor::~JuicynoisefxAudioProcessorEditor()
 }
 
 //==============================================================================
-void JuicynoisefxAudioProcessorEditor::paint(juce::Graphics& g)
+void JuicynoisefxAudioProcessorEditor::paint(juce::Graphics& graphics)
 {
 }
 

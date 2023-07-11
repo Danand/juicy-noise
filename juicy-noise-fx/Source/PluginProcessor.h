@@ -11,6 +11,7 @@
 #include <iostream>
 #include <queue>
 #include <limits>
+#include <atomic>
 
 #include <JuceHeader.h>
 
@@ -20,9 +21,9 @@
 /**
 */
 class JuicynoisefxAudioProcessor : public juce::AudioProcessor
-                            #if JucePlugin_Enable_ARA
-                             , public juce::AudioProcessorARAExtension
-                            #endif
+#if JucePlugin_Enable_ARA
+                                 , public juce::AudioProcessorARAExtension
+#endif
 {
 public:
     //==============================================================================
@@ -33,9 +34,9 @@ public:
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-   #ifndef JucePlugin_PreferredChannelConfigurations
+#ifndef JucePlugin_PreferredChannelConfigurations
     bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
-   #endif
+#endif
 
     void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
@@ -63,15 +64,18 @@ public:
     void setStateInformation(const void* data, int sizeInBytes) override;
 
 private:
-    const float FLOAT_MIN_VALUE = std::numeric_limits<float>::min();
-    const float FLOAT_MAX_VALUE = std::numeric_limits<float>::max();
+    static constexpr int MIN_FREQ = 20;
+    static constexpr int MAX_FREQ = 12000;
 
     bool isCancelled;
-    std::mutex mutex;
+    std::mutex sensorsMutex;
     std::queue<Sensors> sensorsQueue;
-    Sensors sensorsCurrent;
-    float sensorsMagnitudeMin = FLOAT_MAX_VALUE;
-    float sensorsMagnitudeMax = FLOAT_MIN_VALUE;
+    Sensors sensors;
+    int samplesCountInSecond;
+    float* lastBuffer = nullptr;
+    std::atomic<int> latency;
+    int sampleRate;
+    int audioBufferSize;
 
     juce::AudioParameterInt* portParameter;
     juce::AudioParameterInt* freqMinParameter;

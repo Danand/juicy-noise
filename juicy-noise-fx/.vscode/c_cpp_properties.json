@@ -4,9 +4,8 @@
       "name": "Linux",
       "includePath": [
         "${workspaceFolder}/Source",
-        "${workspaceFolder}/Source/Generated/Proto",
         "${workspaceFolder}/JuceLibraryCode",
-        "${workspaceFolder}/../JUCE/modules",
+        "${workspaceFolder}/../JUCE/modules"
       ],
       "defines": [],
       "compilerPath": "/usr/bin/gcc",
@@ -18,7 +17,7 @@
         "path": [
           "${workspaceFolder}/Source/**",
           "${workspaceFolder}/JuceLibraryCode/**",
-          "${workspaceFolder}/../JUCE/modules/**",
+          "${workspaceFolder}/../JUCE/modules/**"
         ],
         "limitSymbolsToIncludedHeaders": true,
         "databaseFilename": ""
