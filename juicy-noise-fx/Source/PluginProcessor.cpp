@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <atomic>
+#include <tuple>
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
@@ -19,6 +20,79 @@
 #include "Utils/Math.h"
 
 //==============================================================================
+
+juce::AudioParameterInt* JuicynoisefxAudioProcessor::AddSynthParamFreq(std::string name, int mapIdx)
+{
+    auto fullName = name + "_" + std::to_string(mapIdx);
+
+    auto* parameter = new juce::AudioParameterInt(
+        fullName,
+        fullName,
+        MIN_FREQ,
+        MAX_FREQ,
+        35);
+
+    this->addParameter(parameter);
+
+    return parameter;
+}
+
+juce::AudioParameterFloat* JuicynoisefxAudioProcessor::AddSynthParamFloat(std::string name, int mapIdx)
+{
+    auto fullName = name + "_" + std::to_string(mapIdx);
+
+    auto* parameter = new juce::AudioParameterFloat(
+        fullName,
+        fullName,
+        0.0f,
+        1.0f,
+        0.0f);
+
+    this->addParameter(parameter);
+
+    return parameter;
+}
+
+SensorParamTuple JuicynoisefxAudioProcessor::AddSensorParam(std::string name, float min, float max)
+{
+    auto fullNameMin = name + "_thr_min";
+
+    auto* parameterMin = new juce::AudioParameterFloat(
+        fullNameMin,
+        fullNameMin,
+        min,
+        max,
+        min);
+
+    this->addParameter(parameterMin);
+
+    auto fullNameMax = name + "_thr_max";
+
+    auto* parameterMax = new juce::AudioParameterFloat(
+        fullNameMax,
+        fullNameMax,
+        min,
+        max,
+        max);
+
+    this->addParameter(parameterMax);
+
+    auto fullNameMap = "__" + name + "_map";
+
+    auto* parameterMap = new juce::AudioParameterInt(
+        fullNameMap,
+        fullNameMap,
+        0,
+        11,
+        0);
+
+    this->addParameter(parameterMap);
+
+    SensorParamTuple sensorParamTuple(parameterMin, parameterMax, parameterMap);
+
+    return sensorParamTuple;
+}
+
 JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
     : AudioProcessor(BusesProperties()
@@ -42,385 +116,73 @@ JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
     this->portListener = new PortListener(this->port);
     this->portParameter->addListener(this->portListener);
 
-    addParameter(this->portParameter);
-
-    this->amplifyParameter = new juce::AudioParameterFloat(
-        "amplifyParameter",
-        "amp",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->amplifyParameter);
-
-    this->clipParameter = new juce::AudioParameterFloat(
-        "clipParameter",
-        "clp",
-        0.0f,
-        1.0f,
-        1.0f);
-
-    addParameter(this->clipParameter);
-
-    this->freqMinSawParameter = new juce::AudioParameterInt(
-        "freqMinSawParameter",
-        "saw_frq_min",
-        MIN_FREQ,
-        MAX_FREQ,
-        35);
-
-    addParameter(this->freqMinSawParameter);
-
-    this->freqMaxSawParameter = new juce::AudioParameterInt(
-        "freqMaxSawParameter",
-        "saw_frq_max",
-        MIN_FREQ,
-        MAX_FREQ,
-        666);
-
-    addParameter(this->freqMaxSawParameter);
-
-    this->freqMinSquareParameter = new juce::AudioParameterInt(
-        "freqMinSquareParameter",
-        "sqr_frq_min",
-        MIN_FREQ,
-        MAX_FREQ,
-        35);
-
-    addParameter(this->freqMinSquareParameter);
-
-    this->freqMaxSquareParameter = new juce::AudioParameterInt(
-        "freqMaxSquareParameter",
-        "sqr_frq_max",
-        MIN_FREQ,
-        MAX_FREQ,
-        666);
-
-    addParameter(this->freqMaxSquareParameter);
-
-    this->freqMinSineParameter = new juce::AudioParameterInt(
-        "freqMinSineParameter",
-        "sin_frq_min",
-        MIN_FREQ,
-        MAX_FREQ,
-        35);
-
-    addParameter(this->freqMinSineParameter);
-
-    this->freqMaxSineParameter = new juce::AudioParameterInt(
-        "freqMaxSineParameter",
-        "sin_frq_min",
-        MIN_FREQ,
-        MAX_FREQ,
-        666);
-
-    addParameter(this->freqMaxSineParameter);
-
-    this->freqMinExoticParameter = new juce::AudioParameterInt(
-        "freqMinExoticParameter",
-        "exo_frq_min",
-        MIN_FREQ,
-        MAX_FREQ,
-        666);
-
-    addParameter(this->freqMinExoticParameter);
-
-    this->freqMaxExoticParameter = new juce::AudioParameterInt(
-        "freqMaxExoticParameter",
-        "exo_frq_max",
-        MIN_FREQ,
-        MAX_FREQ,
-        666);
-
-    addParameter(this->freqMaxExoticParameter);
-
-    this->feedbackTimeParameter = new juce::AudioParameterFloat(
-        "feedbackTimeParameter",
-        "fdb_time",
-        0.0f,
-        12.0f,
-        0.0f);
-
-    addParameter(this->feedbackTimeParameter);
-
-    this->feedbackMixParameter = new juce::AudioParameterFloat(
-        "feedbackMixParameter",
-        "fdb_mix",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->feedbackMixParameter);
-
-    this->thresholdMinLongitudeParameter = new juce::AudioParameterFloat(
-        "thresholdMinLongitudeParameter",
-        "lon_thr_min",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMinLongitudeParameter);
-
-    this->thresholdMaxLongitudeParameter = new juce::AudioParameterFloat(
-        "thresholdMaxLongitudeParameter",
-        "lon_thr_max",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMaxLongitudeParameter);
-
-    this->mapLongitudeParameter = new juce::AudioParameterInt(
-        "mapLongitudeParameter",
-        "lon_map",
-        0,
-        11,
-        0);
-
-    addParameter(this->mapLongitudeParameter);
-
-    this->thresholdMinLatitudeParameter = new juce::AudioParameterFloat(
-        "thresholdMinLatitudeParameter",
-        "lat_thr_min",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMinLatitudeParameter);
-
-    this->thresholdMaxLatitudeParameter = new juce::AudioParameterFloat(
-        "thresholdMaxLatitudeParameter",
-        "lat_thr_max",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMaxLatitudeParameter);
-
-    this->mapLatitudeParameter = new juce::AudioParameterInt(
-        "mapLatitudeParameter",
-        "lat_map",
-        0,
-        11,
-        0);
-
-    addParameter(this->mapLatitudeParameter);
-
-    this->thresholdMinAngularSpeedParameter = new juce::AudioParameterFloat(
-        "thresholdMinAngularSpeedParameter",
-        "ang_ths_min",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMinAngularSpeedParameter);
-
-    this->thresholdMaxAngularSpeedParameter = new juce::AudioParameterFloat(
-        "thresholdMaxAngularSpeedParameter",
-        "ang_ths_max",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMaxAngularSpeedParameter);
-
-    this->mapAngularSpeedParameter = new juce::AudioParameterInt(
-        "mapAngularSpeedParameter",
-        "ang_map",
-        0,
-        11,
-        0);
-
-    addParameter(this->mapAngularSpeedParameter);
-
-    this->thresholdMinAccelerationParameter = new juce::AudioParameterFloat(
-        "thresholdMinAccelerationParameter",
-        "acl_ths_min",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMinAccelerationParameter);
-
-    this->thresholdMaxAccelerationParameter = new juce::AudioParameterFloat(
-        "thresholdMaxAccelerationParameter",
-        "acl_ths_max",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMaxAccelerationParameter);
-
-    this->mapAccelerationParameter = new juce::AudioParameterInt(
-        "mapAccelerationParameter",
-        "acl_map",
-        0,
-        11,
-        0);
-
-    addParameter(this->mapAccelerationParameter);
-
-    this->thresholdMinMagneticParameter = new juce::AudioParameterFloat(
-        "thresholdMinMagneticParameter",
-        "mgn_ths_min",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMinMagneticParameter);
-
-    this->thresholdMaxMagneticParameter = new juce::AudioParameterFloat(
-        "thresholdMaxMagneticParameter",
-        "mgn_ths_max",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMaxMagneticParameter);
-
-    this->mapMagneticParameter = new juce::AudioParameterInt(
-        "mapMagneticParameter",
-        "mgn_map",
-        0,
-        11,
-        0);
-
-    addParameter(this->mapMagneticParameter);
-
-    this->thresholdMinLightParameter = new juce::AudioParameterFloat(
-        "thresholdMinLightParameter",
-        "lgt_ths_min",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMinLightParameter);
-
-    this->thresholdMaxLightParameter = new juce::AudioParameterFloat(
-        "thresholdMaxLightParameter",
-        "lgt_ths_max",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMaxLightParameter);
-
-    this->mapLightParameter = new juce::AudioParameterInt(
-        "mapLightParameter",
-        "lgt_map",
-        0,
-        11,
-        0);
-
-    addParameter(this->mapLightParameter);
-
-    this->thresholdMinPressureParameter = new juce::AudioParameterFloat(
-        "thresholdMinPressureParameter",
-        "prs_ths_min",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMinPressureParameter);
-
-    this->thresholdMaxPressureParameter = new juce::AudioParameterFloat(
-        "thresholdMaxPressureParameter",
-        "prs_ths_max",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMaxPressureParameter);
-
-    this->mapPressureParameter = new juce::AudioParameterInt(
-        "mapPressureParameter",
-        "prs_map",
-        0,
-        11,
-        0);
-
-    addParameter(this->mapPressureParameter);
-
-    this->thresholdMinProximityParameter = new juce::AudioParameterFloat(
-        "thresholdMinProximityParameter",
-        "prx_ths_min",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMinProximityParameter);
-
-    this->thresholdMaxProximityParameter = new juce::AudioParameterFloat(
-        "thresholdMaxProximityParameter",
-        "prx_ths_max",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMaxProximityParameter);
-
-    this->mapProximityParameter = new juce::AudioParameterInt(
-        "mapProximityParameter",
-        "prx_map",
-        0,
-        11,
-        0);
-
-    addParameter(this->mapProximityParameter);
-
-    this->thresholdMinCellSignalParameter = new juce::AudioParameterFloat(
-        "thresholdMinCellSignalParameter",
-        "cel_ths_min",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMinCellSignalParameter);
-
-    this->thresholdMaxCellSignalParameter = new juce::AudioParameterFloat(
-        "thresholdMaxCellSignalParameter",
-        "cel_ths_max",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMaxCellSignalParameter);
-
-    this->mapCellSignalParameter = new juce::AudioParameterInt(
-        "mapCellSignalParameter",
-        "cel_ths_map",
-        0,
-        11,
-        0);
-
-    addParameter(this->mapCellSignalParameter);
-
-    this->thresholdMinWifiSignalParameter = new juce::AudioParameterFloat(
-        "thresholdMinWifiSignalParameter",
-        "wif_ths_min",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMinWifiSignalParameter);
-
-    this->thresholdMaxWifiSignalParameter = new juce::AudioParameterFloat(
-        "thresholdMaxWifiSignalParameter",
-        "wif_ths_max",
-        0.0f,
-        1.0f,
-        0.0f);
-
-    addParameter(this->thresholdMaxWifiSignalParameter);
-
-    this->mapWifiSignalParameter = new juce::AudioParameterInt(
-        "mapWifiSignalParameter",
-        "wif_map",
-        0,
-        11,
-        0);
-
-    addParameter(this->mapWifiSignalParameter);
+    this->amplifyParameter = AddSynthParamFloat("amp", 0);
+    this->clipParameter = AddSynthParamFloat("clp", 1);
+
+    this->freqMinSawParameter = AddSynthParamFreq("saw_frq_min", 2);
+    this->freqMaxSawParameter = AddSynthParamFreq("saw_frq_max", 3);
+
+    this->freqMinSquareParameter = AddSynthParamFreq("sqr_frq_min", 4);
+    this->freqMaxSquareParameter = AddSynthParamFreq("sqr_frq_max", 5);
+
+    this->freqMinSineParameter = AddSynthParamFreq("sin_frq_min", 6);
+    this->freqMaxSineParameter = AddSynthParamFreq("sin_frq_max", 7);
+
+    this->freqMinExoticParameter = AddSynthParamFreq("exo_frq_min", 8);
+    this->freqMaxExoticParameter = AddSynthParamFreq("exo_frq_max", 9);
+
+    this->feedbackTimeParameter = AddSynthParamFloat("fdb_time", 10);
+    this->feedbackMixParameter = AddSynthParamFloat("fdb_mix", 11);
+
+    std::tie(
+        this->thresholdMinLongitudeParameter,
+        this->thresholdMaxLongitudeParameter,
+        this->mapLongitudeParameter) = AddSensorParam("lon", -180.0f, 180.0f);
+
+    std::tie(
+        this->thresholdMinLatitudeParameter,
+        this->thresholdMaxLatitudeParameter,
+        this->mapLatitudeParameter) = AddSensorParam("lat", -90.0f, 90.0f);
+
+    std::tie(
+        this->thresholdMinAngularSpeedParameter,
+        this->thresholdMaxAngularSpeedParameter,
+        this->mapAngularSpeedParameter) = AddSensorParam("ang", -100.0f, 100.0f);
+
+    std::tie(
+        this->thresholdMinAccelerationParameter,
+        this->thresholdMaxAccelerationParameter,
+        this->mapAccelerationParameter) = AddSensorParam("acl", -100.0f, 100.0f);
+
+    std::tie(
+        this->thresholdMinMagneticParameter,
+        this->thresholdMaxMagneticParameter,
+        this->mapMagneticParameter) = AddSensorParam("mgn", -100.0f, 100.0f);
+
+    std::tie(
+        this->thresholdMinLightParameter,
+        this->thresholdMaxLightParameter,
+        this->mapLightParameter) = AddSensorParam("lgt", 0.0f, 10000.0f);
+
+    std::tie(
+        this->thresholdMinPressureParameter,
+        this->thresholdMaxPressureParameter,
+        this->mapPressureParameter) = AddSensorParam("prs", 700.0f, 1000.0f);
+
+    std::tie(
+        this->thresholdMinProximityParameter,
+        this->thresholdMaxProximityParameter,
+        this->mapProximityParameter) = AddSensorParam("prx", 0.0f, 10.0f);
+
+    std::tie(
+        this->thresholdMinCellSignalParameter,
+        this->thresholdMaxCellSignalParameter,
+        this->mapCellSignalParameter) = AddSensorParam("cel", -100.0f, -50.0f);
+
+    std::tie(
+        this->thresholdMinWifiSignalParameter,
+        this->thresholdMaxWifiSignalParameter,
+        this->mapWifiSignalParameter) = AddSensorParam("wif", -100.0f, -50.0f);
 
     SensorsServer* sensorsServer = new SensorsServer(
         this->latency,

@@ -12,6 +12,7 @@
 #include <queue>
 #include <limits>
 #include <atomic>
+#include <tuple>
 
 #include <JuceHeader.h>
 
@@ -19,6 +20,11 @@
 #include "Sensors/Sensors.h"
 #include "Sensors/SensorsServer.h"
 #include "Sensors/SensorsServerTypes.h"
+
+using SensorParamTuple = std::tuple<
+    juce::AudioParameterFloat*,
+    juce::AudioParameterFloat*,
+    juce::AudioParameterInt*>;
 
 //==============================================================================
 /**
@@ -140,6 +146,10 @@ private:
     juce::AudioParameterFloat* thresholdMinWifiSignalParameter;
     juce::AudioParameterFloat* thresholdMaxWifiSignalParameter;
     juce::AudioParameterInt* mapWifiSignalParameter;
+
+    juce::AudioParameterInt* AddSynthParamFreq(std::string name, int mapIdx);
+    juce::AudioParameterFloat* AddSynthParamFloat(std::string name, int mapIdx);
+    SensorParamTuple AddSensorParam(std::string name, float min, float max);
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JuicynoisefxAudioProcessor)
