@@ -29,119 +29,49 @@ struct Sensors
     float cellSignalStrength;
     float wifiSignalStrength;
 
-    inline Sensors operator + (const Sensors &other)
+    inline Sensors max()
     {
         return
         {
-            longitude + other.longitude,
-            latitude + other.latitude,
-            angularSpeedX + other.angularSpeedX,
-            angularSpeedY + other.angularSpeedY,
-            angularSpeedZ + other.angularSpeedZ,
-            accelerationX + other.accelerationX,
-            accelerationY + other.accelerationY,
-            accelerationZ + other.accelerationZ,
-            rotationX + other.rotationX,
-            rotationY + other.rotationY,
-            rotationZ + other.rotationZ,
-            gravityX + other.gravityX,
-            gravityY + other.gravityY,
-            gravityZ + other.gravityZ,
-            magneticX + other.magneticX,
-            magneticY + other.magneticY,
-            magneticZ + other.magneticZ,
-            light + other.light,
-            pressure + other.pressure,
-            proximity + other.proximity,
-            cellSignalStrength + other.cellSignalStrength,
-            wifiSignalStrength + other.wifiSignalStrength
+            longitude = 1.0f,
+            latitude = 1.0f,
+            angularSpeedX = 1.0f,
+            angularSpeedY = 1.0f,
+            angularSpeedZ = 1.0f,
+            accelerationX = 1.0f,
+            accelerationY = 1.0f,
+            accelerationZ = 1.0f,
+            magneticX = 1.0f,
+            magneticY = 1.0f,
+            magneticZ = 1.0f,
+            light = 1.0f,
+            pressure = 1.0f,
+            proximity = 1.0f,
+            cellSignalStrength = 1.0f,
+            wifiSignalStrength = 1.0f
         };
     }
 
-    inline Sensors operator - (const Sensors &other)
+    inline Sensors min()
     {
         return
         {
-            longitude - other.longitude,
-            latitude - other.latitude,
-            angularSpeedX - other.angularSpeedX,
-            angularSpeedY - other.angularSpeedY,
-            angularSpeedZ - other.angularSpeedZ,
-            accelerationX - other.accelerationX,
-            accelerationY - other.accelerationY,
-            accelerationZ - other.accelerationZ,
-            rotationX - other.rotationX,
-            rotationY - other.rotationY,
-            rotationZ - other.rotationZ,
-            gravityX - other.gravityX,
-            gravityY - other.gravityY,
-            gravityZ - other.gravityZ,
-            magneticX - other.magneticX,
-            magneticY - other.magneticY,
-            magneticZ - other.magneticZ,
-            light - other.light,
-            pressure - other.pressure,
-            proximity - other.proximity,
-            cellSignalStrength - other.cellSignalStrength,
-            wifiSignalStrength - other.wifiSignalStrength
-        };
-    }
-
-    inline Sensors operator * (const float &other)
-    {
-        return
-        {
-            longitude * other,
-            latitude * other,
-            angularSpeedX * other,
-            angularSpeedY * other,
-            angularSpeedZ * other,
-            accelerationX * other,
-            accelerationY * other,
-            accelerationZ * other,
-            rotationX * other,
-            rotationY * other,
-            rotationZ * other,
-            gravityX * other,
-            gravityY * other,
-            gravityZ * other,
-            magneticX * other,
-            magneticY * other,
-            magneticZ * other,
-            light * other,
-            pressure * other,
-            proximity * other,
-            cellSignalStrength * other,
-            wifiSignalStrength * other,
-        };
-    }
-
-    inline Sensors operator / (const float &other)
-    {
-        return
-        {
-            longitude / other,
-            latitude / other,
-            angularSpeedX / other,
-            angularSpeedY / other,
-            angularSpeedZ / other,
-            accelerationX / other,
-            accelerationY / other,
-            accelerationZ / other,
-            rotationX / other,
-            rotationY / other,
-            rotationZ / other,
-            gravityX / other,
-            gravityY / other,
-            gravityZ / other,
-            magneticX / other,
-            magneticY / other,
-            magneticZ / other,
-            light / other,
-            pressure / other,
-            proximity / other,
-            cellSignalStrength / other,
-            wifiSignalStrength / other,
+            longitude = -1.0f,
+            latitude = -1.0f,
+            angularSpeedX = -1.0f,
+            angularSpeedY = -1.0f,
+            angularSpeedZ = -1.0f,
+            accelerationX = -1.0f,
+            accelerationY = -1.0f,
+            accelerationZ = -1.0f,
+            magneticX = -1.0f,
+            magneticY = -1.0f,
+            magneticZ = -1.0f,
+            light = -1.0f,
+            pressure = -1.0f,
+            proximity = -1.0f,
+            cellSignalStrength = -1.0f,
+            wifiSignalStrength = -1.0f
         };
     }
 
@@ -149,28 +79,22 @@ struct Sensors
     {
         return
         {
-            longitude * other.longitude,
-            latitude * other.latitude,
-            angularSpeedX * other.angularSpeedX,
-            angularSpeedY * other.angularSpeedY,
-            angularSpeedZ * other.angularSpeedZ,
-            accelerationX * other.accelerationX,
-            accelerationY * other.accelerationY,
-            accelerationZ * other.accelerationZ,
-            rotationX * other.rotationX,
-            rotationY * other.rotationY,
-            rotationZ * other.rotationZ,
-            gravityX * other.gravityX,
-            gravityY * other.gravityY,
-            gravityZ * other.gravityZ,
-            magneticX * other.magneticX,
-            magneticY * other.magneticY,
-            magneticZ * other.magneticZ,
-            light * other.light,
-            pressure * other.pressure,
-            proximity * other.proximity,
-            cellSignalStrength * other.cellSignalStrength,
-            wifiSignalStrength * other.wifiSignalStrength
+            longitude = longitude * other.longitude,
+            latitude =  latitude * other.latitude,
+            angularSpeedX = angularSpeedX * other.angularSpeedX,
+            angularSpeedY = angularSpeedY * other.angularSpeedY,
+            angularSpeedZ = angularSpeedZ * other.angularSpeedZ,
+            accelerationX = accelerationX * other.accelerationX,
+            accelerationY = accelerationY * other.accelerationY,
+            accelerationZ = accelerationZ * other.accelerationZ,
+            magneticX = magneticX * other.magneticX,
+            magneticY = magneticY * other.magneticY,
+            magneticZ = magneticZ * other.magneticZ,
+            light = light * other.light,
+            pressure = pressure * other.pressure,
+            proximity = proximity * other.proximity,
+            cellSignalStrength = cellSignalStrength * other.cellSignalStrength,
+            wifiSignalStrength = wifiSignalStrength * other.wifiSignalStrength
         };
     }
 
@@ -178,100 +102,23 @@ struct Sensors
     {
         return
         {
-            longitude / other.longitude,
-            latitude / other.latitude,
-            angularSpeedX / other.angularSpeedX,
-            angularSpeedY / other.angularSpeedY,
-            angularSpeedZ / other.angularSpeedZ,
-            accelerationX / other.accelerationX,
-            accelerationY / other.accelerationY,
-            accelerationZ / other.accelerationZ,
-            rotationX / other.rotationX,
-            rotationY / other.rotationY,
-            rotationZ / other.rotationZ,
-            gravityX / other.gravityX,
-            gravityY / other.gravityY,
-            gravityZ / other.gravityZ,
-            magneticX / other.magneticX,
-            magneticY / other.magneticY,
-            magneticZ / other.magneticZ,
-            light / other.light,
-            pressure / other.pressure,
-            proximity / other.proximity,
-            cellSignalStrength / other.cellSignalStrength,
-            wifiSignalStrength / other.wifiSignalStrength
+            longitude = longitude / other.longitude,
+            latitude =  latitude / other.latitude,
+            angularSpeedX = angularSpeedX / other.angularSpeedX,
+            angularSpeedY = angularSpeedY / other.angularSpeedY,
+            angularSpeedZ = angularSpeedZ / other.angularSpeedZ,
+            accelerationX = accelerationX / other.accelerationX,
+            accelerationY = accelerationY / other.accelerationY,
+            accelerationZ = accelerationZ / other.accelerationZ,
+            magneticX = magneticX / other.magneticX,
+            magneticY = magneticY / other.magneticY,
+            magneticZ = magneticZ / other.magneticZ,
+            light = light / other.light,
+            pressure = pressure / other.pressure,
+            proximity = proximity / other.proximity,
+            cellSignalStrength = cellSignalStrength / other.cellSignalStrength,
+            wifiSignalStrength = wifiSignalStrength / other.wifiSignalStrength
         };
-    }
-
-    inline float magnitude()
-    {
-        float sum = 0.0f;
-
-        sum += longitude * longitude;
-        sum += latitude * latitude;
-        sum += angularSpeedX * angularSpeedX;
-        sum += angularSpeedY * angularSpeedY;
-        sum += angularSpeedZ * angularSpeedZ;
-        sum += accelerationX * accelerationX;
-        sum += accelerationY * accelerationY;
-        sum += accelerationZ * accelerationZ;
-        sum += rotationX * rotationX;
-        sum += rotationY * rotationY;
-        sum += rotationZ * rotationZ;
-        sum += gravityX * gravityX;
-        sum += gravityY * gravityY;
-        sum += gravityZ * gravityZ;
-        sum += magneticX * magneticX;
-        sum += magneticY * magneticY;
-        sum += magneticZ * magneticZ;
-        sum += light * light;
-        sum += pressure * pressure;
-        sum += longitude * longitude;
-        sum += proximity * proximity;
-        sum += cellSignalStrength * cellSignalStrength;
-        sum += wifiSignalStrength * wifiSignalStrength;
-
-        return sqrt(sum);
-    }
-
-    float magnitudeAngularSpeed()
-    {
-        return sqrt(
-            angularSpeedX * angularSpeedX +
-            angularSpeedY * angularSpeedY +
-            angularSpeedZ * angularSpeedZ);
-    }
-
-    float magnitudeAcceleration()
-    {
-        return sqrt(
-            accelerationX * accelerationX +
-            accelerationY * accelerationY +
-            accelerationZ * accelerationZ);
-    }
-
-    float magnitudeRotation()
-    {
-        return sqrt(
-            rotationX * rotationX +
-            rotationY * rotationY +
-            rotationZ * rotationZ);
-    }
-
-    float magnitudeGravity()
-    {
-        return sqrt(
-            gravityX * gravityX +
-            gravityY * gravityY +
-            gravityZ * gravityZ);
-    }
-
-    float magnitudeMagnetic()
-    {
-        return sqrt(
-            magneticX * magneticZ +
-            magneticY * magneticY +
-            magneticZ * magneticZ);
     }
 };
 
