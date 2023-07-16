@@ -21,34 +21,36 @@
 #include "Sensors/SensorsServer.h"
 #include "Sensors/SensorsServerTypes.h"
 
+typedef float (*FloatFunc)(float input, float modifier);
 typedef float (*SynthFunc)(float time, int frequency, float amplitude, float phaseShift);
+typedef float (*SensorFunc)(const Sensors &sensors);
+
+struct MasterParamsFloat
+{
+    int mapIdx;
+    juce::AudioParameterFloat* valueParam;
+    FloatFunc floatFunc;
+};
 
 struct SynthParams
 {
     int mapIdx;
-};
-
-struct SynthParamsFloat : public SynthParams
-{
-    juce::AudioParameterFloat* valueParam;
-};
-
-struct SynthParamsFreq : public SynthParams
-{
     juce::AudioParameterInt* valueMinParam;
     juce::AudioParameterInt* valueMaxParam;
     SynthFunc synthFunc;
 };
 
-struct SensorsParams
+struct SensorParams
 {
     juce::AudioParameterInt* mapIdxParam;
     juce::AudioParameterFloat* valueMinParam;
     juce::AudioParameterFloat* valueMaxParam;
+    SensorFunc sensorFunc;
 };
 
-typedef SynthParams SynthParamsFixed[7];
-typedef SensorsParams SensorsParamsFixed[10];
+typedef MasterParamsFloat MasterParamsFloatFixed[4];
+typedef SynthParams SynthParamsFixed[4];
+typedef SensorParams SensorParamsFixed[10];
 
 using SynthParamFreqTuple = std::tuple<
     juce::AudioParameterInt*,
@@ -114,7 +116,7 @@ private:
     std::mutex sensorsMutex;
     std::queue<Sensors> sensorsQueue;
     Sensors sensors;
-    int samplesCountInSecond;
+    int samplesCountInSecond = 0;
     float* lastBuffer = nullptr;
     std::atomic<int> latency;
     int sampleRate;
@@ -124,6 +126,9 @@ private:
 
     juce::AudioParameterFloat* amplifyParameter;
     juce::AudioParameterFloat* clipParameter;
+
+    juce::AudioParameterFloat* feedbackTimeParameter;
+    juce::AudioParameterFloat* feedbackMixParameter;
 
     juce::AudioParameterInt* freqMinSawParameter;
     juce::AudioParameterInt* freqMaxSawParameter;
@@ -136,9 +141,6 @@ private:
 
     juce::AudioParameterInt* freqMinExoticParameter;
     juce::AudioParameterInt* freqMaxExoticParameter;
-
-    juce::AudioParameterFloat* feedbackTimeParameter;
-    juce::AudioParameterFloat* feedbackMixParameter;
 
     juce::AudioParameterFloat* thresholdMinLongitudeParameter;
     juce::AudioParameterFloat* thresholdMaxLongitudeParameter;
@@ -181,25 +183,30 @@ private:
     juce::AudioParameterInt* mapWifiSignalParameter;
 
     SynthParamsFixed synthParams;
-    SensorsParamsFixed sensorParams;
+    SensorParamsFixed sensorsParams;
+    MasterParamsFloatFixed masterParamsFloat;
 
-    SynthParamFreqTuple addSynthParamFreq(
+    SynthParamFreqTuple addSynthParam(
         SynthParamsFixed &synthParams,
         std::string name,
         int mapIdx,
-        SynthFunc synthFunc);
+        SynthFunc synthFunc,
+        int &paramsCount);
 
-    juce::AudioParameterFloat* addSynthParamFloat(
-        SynthParamsFixed &synthParams,
+    juce::AudioParameterFloat* addMasterParamFloat(
+        MasterParamsFloatFixed &masterParamsFloat,
         std::string name,
-        int mapIdx);
+        int mapIdx,
+        FloatFunc floatFunc,
+        int &paramsCount);
 
     SensorParamTuple addSensorParam(
-        SensorsParamsFixed &sensorsParams,
+        SensorParamsFixed &sensorParams,
         std::string name,
         float min,
         float max,
-        int &sensorsParamsCount);
+        SensorFunc sensorFunc,
+        int &paramsCount);
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JuicynoisefxAudioProcessor)

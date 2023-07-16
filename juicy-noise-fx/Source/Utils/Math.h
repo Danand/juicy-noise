@@ -4,6 +4,24 @@
 #include <cmath>
 #include <random>
 
+float magnitude(float x, float y, float z)
+{
+    return sqrt(
+        (x * x) +
+        (y * y) +
+        (z * z));
+}
+
+float lerp(float from, float to, float ratio)
+{
+    return std::abs((1.0f - ratio) * from + (to * ratio));
+}
+
+float inverseLerp(float from, float to, float value)
+{
+    return std::abs((value - from) / (to - from));
+}
+
 float stripInt(float value)
 {
     float dummy;
