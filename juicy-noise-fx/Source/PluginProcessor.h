@@ -21,6 +21,39 @@
 #include "Sensors/SensorsServer.h"
 #include "Sensors/SensorsServerTypes.h"
 
+typedef float (*SynthFunc)(float time, int frequency, float amplitude, float phaseShift);
+
+struct SynthParams
+{
+    int mapIdx;
+};
+
+struct SynthParamsFloat : public SynthParams
+{
+    juce::AudioParameterFloat* valueParam;
+};
+
+struct SynthParamsFreq : public SynthParams
+{
+    juce::AudioParameterInt* valueMinParam;
+    juce::AudioParameterInt* valueMaxParam;
+    SynthFunc synthFunc;
+};
+
+struct SensorsParams
+{
+    juce::AudioParameterInt* mapIdxParam;
+    juce::AudioParameterFloat* valueMinParam;
+    juce::AudioParameterFloat* valueMaxParam;
+};
+
+typedef SynthParams SynthParamsFixed[7];
+typedef SensorsParams SensorsParamsFixed[10];
+
+using SynthParamFreqTuple = std::tuple<
+    juce::AudioParameterInt*,
+    juce::AudioParameterInt*>;
+
 using SensorParamTuple = std::tuple<
     juce::AudioParameterFloat*,
     juce::AudioParameterFloat*,
@@ -76,7 +109,7 @@ private:
     static constexpr int MIN_FREQ = 20;
     static constexpr int MAX_FREQ = 12000;
 
-    PortListener* portListener;
+    PortListener* portListener = nullptr;
     SocketPort port;
     std::mutex sensorsMutex;
     std::queue<Sensors> sensorsQueue;
@@ -147,9 +180,26 @@ private:
     juce::AudioParameterFloat* thresholdMaxWifiSignalParameter;
     juce::AudioParameterInt* mapWifiSignalParameter;
 
-    juce::AudioParameterInt* AddSynthParamFreq(std::string name, int mapIdx);
-    juce::AudioParameterFloat* AddSynthParamFloat(std::string name, int mapIdx);
-    SensorParamTuple AddSensorParam(std::string name, float min, float max);
+    SynthParamsFixed synthParams;
+    SensorsParamsFixed sensorParams;
+
+    SynthParamFreqTuple addSynthParamFreq(
+        SynthParamsFixed &synthParams,
+        std::string name,
+        int mapIdx,
+        SynthFunc synthFunc);
+
+    juce::AudioParameterFloat* addSynthParamFloat(
+        SynthParamsFixed &synthParams,
+        std::string name,
+        int mapIdx);
+
+    SensorParamTuple addSensorParam(
+        SensorsParamsFixed &sensorsParams,
+        std::string name,
+        float min,
+        float max,
+        int &sensorsParamsCount);
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JuicynoisefxAudioProcessor)
