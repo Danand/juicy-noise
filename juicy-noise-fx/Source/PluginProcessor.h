@@ -16,50 +16,11 @@
 
 #include <JuceHeader.h>
 
+#include "Parameters/ParamsContainer.h"
 #include "Listeners/PortListener.h"
 #include "Sensors/Sensors.h"
 #include "Sensors/SensorsServer.h"
 #include "Sensors/SensorsServerTypes.h"
-
-typedef float (*FloatFunc)(float input, float modifier);
-typedef float (*SynthFunc)(float time, int frequency, float amplitude, float phaseShift);
-typedef float (*SensorFunc)(const Sensors &sensors);
-
-struct MasterParamsFloat
-{
-    int mapIdx;
-    juce::AudioParameterFloat* valueParam;
-    FloatFunc floatFunc;
-};
-
-struct SynthParams
-{
-    int mapIdx;
-    juce::AudioParameterInt* valueMinParam;
-    juce::AudioParameterInt* valueMaxParam;
-    SynthFunc synthFunc;
-};
-
-struct SensorParams
-{
-    juce::AudioParameterInt* mapIdxParam;
-    juce::AudioParameterFloat* valueMinParam;
-    juce::AudioParameterFloat* valueMaxParam;
-    SensorFunc sensorFunc;
-};
-
-typedef MasterParamsFloat MasterParamsFloatFixed[4];
-typedef SynthParams SynthParamsFixed[4];
-typedef SensorParams SensorParamsFixed[10];
-
-using SynthParamFreqTuple = std::tuple<
-    juce::AudioParameterInt*,
-    juce::AudioParameterInt*>;
-
-using SensorParamTuple = std::tuple<
-    juce::AudioParameterFloat*,
-    juce::AudioParameterFloat*,
-    juce::AudioParameterInt*>;
 
 //==============================================================================
 /**
@@ -108,9 +69,8 @@ public:
     void setStateInformation(const void* data, int sizeInBytes) override;
 
 private:
-    static constexpr int MIN_FREQ = 20;
-    static constexpr int MAX_FREQ = 12000;
-
+    juce::AudioParameterInt* portParameter;
+    ParamsContainer paramsContainer;
     PortListener* portListener = nullptr;
     SocketPort port;
     std::mutex sensorsMutex;
@@ -121,92 +81,6 @@ private:
     std::atomic<int> latency;
     int sampleRate;
     int audioBufferSize;
-
-    juce::AudioParameterInt* portParameter;
-
-    juce::AudioParameterFloat* amplifyParameter;
-    juce::AudioParameterFloat* clipParameter;
-
-    juce::AudioParameterFloat* feedbackTimeParameter;
-    juce::AudioParameterFloat* feedbackMixParameter;
-
-    juce::AudioParameterInt* freqMinSawParameter;
-    juce::AudioParameterInt* freqMaxSawParameter;
-
-    juce::AudioParameterInt* freqMinSquareParameter;
-    juce::AudioParameterInt* freqMaxSquareParameter;
-
-    juce::AudioParameterInt* freqMinSineParameter;
-    juce::AudioParameterInt* freqMaxSineParameter;
-
-    juce::AudioParameterInt* freqMinExoticParameter;
-    juce::AudioParameterInt* freqMaxExoticParameter;
-
-    juce::AudioParameterFloat* thresholdMinLongitudeParameter;
-    juce::AudioParameterFloat* thresholdMaxLongitudeParameter;
-    juce::AudioParameterInt* mapLongitudeParameter;
-
-    juce::AudioParameterFloat* thresholdMinLatitudeParameter;
-    juce::AudioParameterFloat* thresholdMaxLatitudeParameter;
-    juce::AudioParameterInt* mapLatitudeParameter;
-
-    juce::AudioParameterFloat* thresholdMinAngularSpeedParameter;
-    juce::AudioParameterFloat* thresholdMaxAngularSpeedParameter;
-    juce::AudioParameterInt* mapAngularSpeedParameter;
-
-    juce::AudioParameterFloat* thresholdMinAccelerationParameter;
-    juce::AudioParameterFloat* thresholdMaxAccelerationParameter;
-    juce::AudioParameterInt* mapAccelerationParameter;
-
-    juce::AudioParameterFloat* thresholdMinMagneticParameter;
-    juce::AudioParameterFloat* thresholdMaxMagneticParameter;
-    juce::AudioParameterInt* mapMagneticParameter;
-
-    juce::AudioParameterFloat* thresholdMinLightParameter;
-    juce::AudioParameterFloat* thresholdMaxLightParameter;
-    juce::AudioParameterInt* mapLightParameter;
-
-    juce::AudioParameterFloat* thresholdMinPressureParameter;
-    juce::AudioParameterFloat* thresholdMaxPressureParameter;
-    juce::AudioParameterInt* mapPressureParameter;
-
-    juce::AudioParameterFloat* thresholdMinProximityParameter;
-    juce::AudioParameterFloat* thresholdMaxProximityParameter;
-    juce::AudioParameterInt* mapProximityParameter;
-
-    juce::AudioParameterFloat* thresholdMinCellSignalParameter;
-    juce::AudioParameterFloat* thresholdMaxCellSignalParameter;
-    juce::AudioParameterInt* mapCellSignalParameter;
-
-    juce::AudioParameterFloat* thresholdMinWifiSignalParameter;
-    juce::AudioParameterFloat* thresholdMaxWifiSignalParameter;
-    juce::AudioParameterInt* mapWifiSignalParameter;
-
-    SynthParamsFixed synthParams;
-    SensorParamsFixed sensorsParams;
-    MasterParamsFloatFixed masterParamsFloat;
-
-    SynthParamFreqTuple addSynthParam(
-        SynthParamsFixed &synthParams,
-        std::string name,
-        int mapIdx,
-        SynthFunc synthFunc,
-        int &paramsCount);
-
-    juce::AudioParameterFloat* addMasterParamFloat(
-        MasterParamsFloatFixed &masterParamsFloat,
-        std::string name,
-        int mapIdx,
-        FloatFunc floatFunc,
-        int &paramsCount);
-
-    SensorParamTuple addSensorParam(
-        SensorParamsFixed &sensorParams,
-        std::string name,
-        float min,
-        float max,
-        SensorFunc sensorFunc,
-        int &paramsCount);
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JuicynoisefxAudioProcessor)

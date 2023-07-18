@@ -11,7 +11,6 @@
 #include <atomic>
 
 #include "SensorsServer.h"
-#include "SensorsServerTypes.h"
 
 SocketDescriptor openServerSocketDescriptor(const SocketPort &port, sockaddr_in &address)
 {

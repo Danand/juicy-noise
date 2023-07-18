@@ -92,6 +92,8 @@
     "typeinfo": "cpp",
     "valarray": "cpp",
     "variant": "cpp",
-    "*.mm": "cpp"
-  }
+    "*.mm": "cpp",
+    "queue": "cpp"
+  },
+  "C_Cpp.default.compilerPath": "/bin/g++-11"
 }

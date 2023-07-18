@@ -13,149 +13,10 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-#include "Listeners/PortListener.h"
-#include "Sensors/Sensors.h"
-#include "Sensors/SensorsServer.h"
-#include "Sensors/SensorsServerTypes.h"
+#include "Parameters/Assignments.h"
 #include "Utils/Math.h"
 
 //==============================================================================
-
-SynthParamFreqTuple JuicynoisefxAudioProcessor::addSynthParam(
-    SynthParamsFixed &synthParams,
-    std::string name,
-    int mapIdx,
-    SynthFunc synthFunc,
-    int &paramsCount)
-{
-    auto fullNameMin = name + "_" + "min" + "_" + std::to_string(mapIdx);
-
-    auto* parameterMin = new juce::AudioParameterInt(
-        fullNameMin,
-        fullNameMin,
-        MIN_FREQ,
-        MAX_FREQ,
-        35);
-
-    this->addParameter(parameterMin);
-
-    auto fullNameMax = name + "_" + "max" + "_" + std::to_string(mapIdx);
-
-    auto* parameterMax = new juce::AudioParameterInt(
-        fullNameMax,
-        fullNameMax,
-        MIN_FREQ,
-        MAX_FREQ,
-        666);
-
-    this->addParameter(parameterMax);
-
-    SynthParams synthParam;
-
-    synthParam.mapIdx = mapIdx;
-    synthParam.valueMinParam = parameterMin;
-    synthParam.valueMaxParam = parameterMax;
-    synthParam.synthFunc = synthFunc;
-
-    synthParams[paramsCount] = synthParam;
-
-    paramsCount++;
-
-    SynthParamFreqTuple synthParamTuple(parameterMin, parameterMax);
-
-    return synthParamTuple;
-}
-
-juce::AudioParameterFloat* JuicynoisefxAudioProcessor::addMasterParamFloat(
-    MasterParamsFloatFixed &masterParamsFloat,
-    std::string name,
-    int mapIdx,
-    FloatFunc floatFunc,
-    int &paramsCount)
-{
-    auto fullName = name + "_" + std::to_string(mapIdx);
-
-    auto* parameter = new juce::AudioParameterFloat(
-        fullName,
-        fullName,
-        0.0f,
-        1.0f,
-        0.0f);
-
-    this->addParameter(parameter);
-
-    MasterParamsFloat masterParam;
-
-    masterParam.mapIdx = mapIdx;
-    masterParam.valueParam = parameter;
-    masterParam.floatFunc = floatFunc;
-
-    masterParamsFloat[paramsCount] = masterParam;
-
-    paramsCount++;
-
-    return parameter;
-}
-
-SensorParamTuple JuicynoisefxAudioProcessor::addSensorParam(
-    SensorParamsFixed &sensorParams,
-    std::string name,
-    float min,
-    float max,
-    SensorFunc sensorFunc,
-    int &paramsCount)
-{
-    auto fullNameMin = name + "_thr_min";
-
-    auto* parameterMin = new juce::AudioParameterFloat(
-        fullNameMin,
-        fullNameMin,
-        min,
-        max,
-        min);
-
-    this->addParameter(parameterMin);
-
-    auto fullNameMax = name + "_thr_max";
-
-    auto* parameterMax = new juce::AudioParameterFloat(
-        fullNameMax,
-        fullNameMax,
-        min,
-        max,
-        max);
-
-    this->addParameter(parameterMax);
-
-    auto fullNameMap = "__" + name + "_map";
-
-    auto* parameterMap = new juce::AudioParameterInt(
-        fullNameMap,
-        fullNameMap,
-        -1,
-        7,
-        -1);
-
-    this->addParameter(parameterMap);
-
-    SensorParams sensorsParamsItem;
-
-    sensorsParamsItem.mapIdxParam = parameterMap;
-    sensorsParamsItem.valueMinParam = parameterMin;
-    sensorsParamsItem.valueMaxParam = parameterMax;
-    sensorsParamsItem.sensorFunc = sensorFunc;
-
-    sensorsParams[paramsCount] = sensorsParamsItem;
-
-    paramsCount++;
-
-    SensorParamTuple sensorParamTuple(
-        parameterMin,
-        parameterMax,
-        parameterMap);
-
-    return sensorParamTuple;
-}
 
 JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -180,187 +41,9 @@ JuicynoisefxAudioProcessor::JuicynoisefxAudioProcessor()
     this->portListener = new PortListener(this->port);
     this->portParameter->addListener(this->portListener);
 
-    addParameter(this->portParameter);
+    this->addParameter(this->portParameter);
 
-    int paramsCount = 0;
-
-    this->amplifyParameter = addMasterParamFloat(
-        this->masterParamsFloat,
-        "amp",
-        0,
-        [] (float input, float modifier) { return input + modifier; },
-        paramsCount);
-
-    this->clipParameter = addMasterParamFloat(
-        this->masterParamsFloat,
-        "clp",
-        1,
-        [] (float input, float modifier) { return std::min(input, modifier); },
-        paramsCount);
-
-        this->feedbackTimeParameter = addMasterParamFloat(
-        this->masterParamsFloat,
-        "fdb_time",
-        2,
-        [] (float input, float modifier) { return input; },
-        paramsCount); // TODO: Figure out how to implement.
-
-    this->feedbackMixParameter = addMasterParamFloat(
-        this->masterParamsFloat,
-        "fdb_mix",
-        3,
-        [] (float input, float modifier) { return input; },
-        paramsCount); // TODO: Figure out how to implement.
-
-    paramsCount = 0;
-
-     std::tie(
-        this->freqMinSawParameter,
-        this->freqMaxSawParameter) = addSynthParam(
-            this->synthParams,
-            "saw_frq",
-            4,
-            sawtoothWave,
-            paramsCount);
-
-    std::tie(
-        this->freqMinSquareParameter,
-        this->freqMaxSquareParameter) = addSynthParam(
-            this->synthParams,
-            "sqr_frq",
-            5,
-            squareWave,
-            paramsCount);
-
-    std::tie(
-        this->freqMinSineParameter,
-        this->freqMaxSineParameter) = addSynthParam(
-            this->synthParams,
-            "sin_frq",
-            6,
-            sineWave,
-            paramsCount);
-
-    std::tie(
-        this->freqMinExoticParameter,
-        this->freqMaxExoticParameter) = addSynthParam(
-            this->synthParams,
-            "exo_frq",
-            7,
-            exoticWave,
-            paramsCount);
-
-    paramsCount = 0;
-
-    std::tie(
-        this->thresholdMinLongitudeParameter,
-        this->thresholdMaxLongitudeParameter,
-        this->mapLongitudeParameter) = addSensorParam(
-            this->sensorsParams,
-            "lon",
-            -180.0f,
-            180.0f,
-            [] (const Sensors &sensors) { return sensors.longitude; },
-            paramsCount);
-
-    std::tie(
-        this->thresholdMinLatitudeParameter,
-        this->thresholdMaxLatitudeParameter,
-        this->mapLatitudeParameter) = addSensorParam(
-            this->sensorsParams,
-            "lat",
-            -90.0f,
-            90.0f,
-            [] (const Sensors &sensors) { return sensors.latitude; },
-            paramsCount);
-
-    std::tie(
-        this->thresholdMinAngularSpeedParameter,
-        this->thresholdMaxAngularSpeedParameter,
-        this->mapAngularSpeedParameter) = addSensorParam(
-            this->sensorsParams,
-            "ang",
-            -100.0f,
-            100.0f,
-            [] (const Sensors &sensors) { return magnitude(sensors.angularSpeedX, sensors.angularSpeedY, sensors.angularSpeedZ); },
-            paramsCount);
-
-    std::tie(
-        this->thresholdMinAccelerationParameter,
-        this->thresholdMaxAccelerationParameter,
-        this->mapAccelerationParameter) = addSensorParam(
-            this->sensorsParams,
-            "acl",
-            -100.0f,
-            100.0f,
-            [] (const Sensors &sensors) { return magnitude(sensors.accelerationX, sensors.accelerationY, sensors.accelerationZ); },
-            paramsCount);
-
-    std::tie(
-        this->thresholdMinMagneticParameter,
-        this->thresholdMaxMagneticParameter,
-        this->mapMagneticParameter) = addSensorParam(
-            this->sensorsParams,
-            "mgn",
-            -100.0f,
-            100.0f,
-            [] (const Sensors &sensors) { return magnitude(sensors.magneticX, sensors.magneticY, sensors.magneticZ); },
-            paramsCount);
-
-    std::tie(
-        this->thresholdMinLightParameter,
-        this->thresholdMaxLightParameter,
-        this->mapLightParameter) = addSensorParam(
-            this->sensorsParams,
-            "lgt",
-            0.0f,
-            10000.0f,
-            [] (const Sensors &sensors) { return sensors.light; },
-            paramsCount);
-
-    std::tie(
-        this->thresholdMinPressureParameter,
-        this->thresholdMaxPressureParameter,
-        this->mapPressureParameter) = addSensorParam(
-            this->sensorsParams,
-            "prs",
-            700.0f,
-            1000.0f,
-            [] (const Sensors &sensors) { return sensors.pressure; },
-            paramsCount);
-
-    std::tie(
-        this->thresholdMinProximityParameter,
-        this->thresholdMaxProximityParameter,
-        this->mapProximityParameter) = addSensorParam(
-            this->sensorsParams,
-            "prx",
-            0.0f,
-            10.0f,
-            [] (const Sensors &sensors) { return sensors.proximity; },
-            paramsCount);
-
-    std::tie(
-        this->thresholdMinCellSignalParameter,
-        this->thresholdMaxCellSignalParameter,
-        this->mapCellSignalParameter) = addSensorParam(
-            this->sensorsParams,
-            "cel",
-            -100.0f,
-            -50.0f,
-            [] (const Sensors &sensors) { return sensors.cellSignalStrength; },
-            paramsCount);
-
-    std::tie(
-        this->thresholdMinWifiSignalParameter,
-        this->thresholdMaxWifiSignalParameter,
-        this->mapWifiSignalParameter) = addSensorParam(
-            this->sensorsParams,
-            "wif",
-            -100.0f,
-            -50.0f,
-            [] (const Sensors &sensors) { return sensors.wifiSignalStrength; },
-            paramsCount);
+    Assignments::addSoundParameters(this, this->paramsContainer);
 
     SensorsServer* sensorsServer = new SensorsServer(
         this->latency,
@@ -543,9 +226,9 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, 
         float synthOutputBlendedLeft = 0.0f;
         float synthOutputBlendedRight = 0.0f;
 
-        for (SynthParams synthParam : this->synthParams)
+        for (SynthParams synthParam : this->paramsContainer.synthParams)
         {
-            for (SensorParams sensorsParam : this->sensorsParams)
+            for (SensorParams sensorsParam : this->paramsContainer.sensorsParams)
             {
                 if (sensorsParam.mapIdxParam->get() == synthParam.mapIdx)
                 {
@@ -587,9 +270,9 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, 
         outputLeft = synthOutputBlendedLeft;
         outputRight = synthOutputBlendedRight;
 
-        for (MasterParamsFloat masterParamFloat : this->masterParamsFloat)
+        for (MasterParamsFloat masterParamFloat : this->paramsContainer.masterParamsFloat)
         {
-            for (SensorParams sensorsParam : this->sensorsParams)
+            for (SensorParams sensorsParam : this->paramsContainer.sensorsParams)
             {
                 if (sensorsParam.mapIdxParam->get() == masterParamFloat.mapIdx)
                 {
@@ -598,8 +281,13 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, 
                         sensorsParam.valueMaxParam->get(),
                         sensorsParam.sensorFunc(this->sensors));
 
-                    outputLeft = masterParamFloat.floatFunc(outputLeft, masterParamFloat.valueParam->get() * normalizedSensorValue);
-                    outputRight = masterParamFloat.floatFunc(outputRight, masterParamFloat.valueParam->get() * normalizedSensorValue);
+                    outputLeft = masterParamFloat.floatFunc(
+                        outputLeft,
+                        masterParamFloat.valueParam->get() * normalizedSensorValue);
+
+                    outputRight = masterParamFloat.floatFunc(
+                        outputRight,
+                        masterParamFloat.valueParam->get() * normalizedSensorValue);
                 }
             }
         }

@@ -1,34 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="Hcet9U" name="juicy-noise-fx" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              projectLineFeed="&#10;" version="0.0.1" companyName="Danand"
-              companyWebsite="https://github.com/Danand/" pluginFormats="buildVST3"
-              pluginManufacturerCode="ReiD" pluginCode="Jcyn" pluginVST3Category="Distortion,Fx,Network,NoOfflineProcess"
-              maxBinaryFileSize="20971520" cppLanguageStandard="20" pluginDesc="Make some noise with Android device!"
+<JUCERPROJECT id="Hcet9U"
+              name="juicy-noise-fx"
+              projectType="audioplug"
+              useAppConfig="0"
+              addUsingNamespaceToJuceHeader="0"
+              displaySplashScreen="1"
+              jucerFormatVersion="1"
+              projectLineFeed="&#10;"
+              version="0.0.1"
+              companyName="Danand"
+              companyWebsite="https://github.com/Danand/"
+              pluginFormats="buildVST3"
+              pluginManufacturerCode="ReiD"
+              pluginCode="Jcyn"
+              pluginVST3Category="Distortion,Fx,Network,NoOfflineProcess"
+              maxBinaryFileSize="20971520"
+              cppLanguageStandard="20"
+              pluginDesc="Make some noise with Android device!"
               pluginName="JuicyNoiseFX">
   <MAINGROUP id="BMF8ml" name="juicy-noise-fx">
     <GROUP id="{6DF8F92A-B23A-E88B-1EE0-29233E53C0DC}" name="Source">
+      <GROUP id="{37C98319-6D40-8856-D0A8-8F9245BDC123}" name="Parameters">
+        <FILE id="mlMlIw" name="Assignments.cpp" compile="1" resource="0" file="Source/Parameters/Assignments.cpp"/>
+        <FILE id="AGVVuQ" name="Assignments.h" compile="0" resource="0" file="Source/Parameters/Assignments.h"/>
+        <FILE id="MvmJH0" name="Fields.h" compile="0" resource="0" file="Source/Parameters/Fields.h"/>
+        <FILE id="KPSmOw" name="FixedArrays.h" compile="0" resource="0" file="Source/Parameters/FixedArrays.h"/>
+        <FILE id="mtmTiv" name="ParamsContainer.h" compile="0" resource="0" file="Source/Parameters/ParamsContainer.h"/>
+        <FILE id="mSm4BI" name="Types.h" compile="0" resource="0" file="Source/Parameters/Types.h"/>
+      </GROUP>
+      <GROUP id="{C9325C2C-114B-8B0F-3DAC-E9DC949D01A4}" name="Constants">
+        <FILE id="MqO7wL" name="Freq.h" compile="0" resource="0" file="Source/Constants/Freq.h"/>
+      </GROUP>
       <GROUP id="{464B9BF3-CB6D-56B3-37E5-B85AC40501F7}" name="Utils">
         <FILE id="UxxZ9g" name="Math.h" compile="0" resource="0" file="Source/Utils/Math.h"/>
+        <FILE id="hbsyuh" name="Synths.h" compile="0" resource="0" file="Source/Utils/Synths.h"/>
       </GROUP>
       <GROUP id="{59C68CD5-782E-123E-301A-077512ECA3DC}" name="Listeners">
         <FILE id="dkeDcv" name="PortListener.h" compile="0" resource="0" file="Source/Listeners/PortListener.h"/>
       </GROUP>
       <GROUP id="{7CC1DC1D-82CA-8C36-D96E-14ACB12BE370}" name="Sensors">
         <FILE id="eW4Vh7" name="Sensors.h" compile="0" resource="0" file="Source/Sensors/Sensors.h"/>
-        <FILE id="EMTsaK" name="SensorsServer.cpp" compile="1" resource="0"
-              file="Source/Sensors/SensorsServer.cpp"/>
+        <FILE id="EMTsaK" name="SensorsServer.cpp" compile="1" resource="0" file="Source/Sensors/SensorsServer.cpp"/>
         <FILE id="HcnvmM" name="SensorsServer.h" compile="0" resource="0" file="Source/Sensors/SensorsServer.h"/>
-        <FILE id="kuMH9A" name="SensorsServerTypes.h" compile="0" resource="0"
-              file="Source/Sensors/SensorsServerTypes.h"/>
+        <FILE id="kuMH9A" name="SensorsServerTypes.h" compile="0" resource="0" file="Source/Sensors/SensorsServerTypes.h"/>
       </GROUP>
-      <FILE id="Qr3z8a" name="PluginProcessor.cpp" compile="1" resource="0"
-            file="Source/PluginProcessor.cpp"/>
-      <FILE id="Uarric" name="PluginProcessor.h" compile="0" resource="0"
-            file="Source/PluginProcessor.h"/>
-      <FILE id="MDn7ZO" name="PluginEditor.cpp" compile="1" resource="0"
-            file="Source/PluginEditor.cpp"/>
+      <FILE id="Qr3z8a" name="PluginProcessor.cpp" compile="1" resource="0" file="Source/PluginProcessor.cpp"/>
+      <FILE id="Uarric" name="PluginProcessor.h" compile="0" resource="0" file="Source/PluginProcessor.h"/>
+      <FILE id="MDn7ZO" name="PluginEditor.cpp" compile="1" resource="0" file="Source/PluginEditor.cpp"/>
       <FILE id="SKs0sy" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
   </MAINGROUP>
@@ -59,8 +78,7 @@
     <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
-    <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0"
-            useGlobalPath="0"/>
+    <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
