@@ -11,7 +11,6 @@
 #include <tuple>
 
 #include "PluginProcessor.h"
-#include "PluginEditor.h"
 
 #include "Parameters/Assignments.h"
 #include "Utils/Math.h"
