@@ -29,6 +29,12 @@ struct Sensors
     float cellSignalStrength = 0.0f;
     float wifiSignalStrength = 0.0f;
 
+    static inline Sensors zero()
+    {
+        Sensors result;
+        return result;
+    }
+
     static inline Sensors avg(const Sensors &left, const Sensors &right)
     {
         Sensors result;
@@ -51,6 +57,26 @@ struct Sensors
         result.wifiSignalStrength = (left.wifiSignalStrength + right.wifiSignalStrength) / 2.0f;
 
         return result;
+    }
+
+    friend bool operator == (const Sensors &left, const Sensors &right)
+    {
+        return left.longitude == right.longitude &&
+               left.latitude == right.latitude &&
+               left.angularSpeedX == right.angularSpeedX &&
+               left.angularSpeedY == right.angularSpeedY &&
+               left.angularSpeedZ == right.angularSpeedZ &&
+               left.accelerationX == right.accelerationX &&
+               left.accelerationY == right.accelerationY &&
+               left.accelerationZ == right.accelerationZ &&
+               left.magneticX == right.magneticX &&
+               left.magneticY == right.magneticY &&
+               left.magneticZ == right.magneticZ &&
+               left.light == right.light &&
+               left.pressure == right.pressure &&
+               left.proximity == right.proximity &&
+               left.cellSignalStrength == right.cellSignalStrength &&
+               left.wifiSignalStrength == right.wifiSignalStrength;
     }
 };
 
