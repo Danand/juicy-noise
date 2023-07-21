@@ -256,7 +256,7 @@ void Assignments::addSoundParameters(
             processor,
             paramsContainer,
             "rot_x",
-            0.0f,
+            -1.0f,
             1.0f,
             [] (const Sensors &sensors) { return sensors.rotationX; },
             paramsCount);
@@ -268,7 +268,7 @@ void Assignments::addSoundParameters(
             processor,
             paramsContainer,
             "rot_y",
-            0.0f,
+            -1.0f,
             1.0f,
             [] (const Sensors &sensors) { return sensors.rotationY; },
             paramsCount);
@@ -280,7 +280,7 @@ void Assignments::addSoundParameters(
             processor,
             paramsContainer,
             "rot_z",
-            0.0f,
+            -1.0f,
             1.0f,
             [] (const Sensors &sensors) { return sensors.rotationZ; },
             paramsCount);
@@ -293,7 +293,7 @@ void Assignments::addSoundParameters(
             paramsContainer,
             "ang",
             0.0f,
-            30.0f,
+            1.0f,
             [] (const Sensors &sensors) { return magnitudeSynth(sensors.angularSpeedX, sensors.angularSpeedY, sensors.angularSpeedZ); },
             paramsCount);
 
@@ -305,7 +305,7 @@ void Assignments::addSoundParameters(
             paramsContainer,
             "acl",
             0.0f,
-            30.0f,
+            10.0f,
             [] (const Sensors &sensors) { return magnitudeSynth(sensors.accelerationX, sensors.accelerationY, sensors.accelerationZ); },
             paramsCount);
 
@@ -317,7 +317,7 @@ void Assignments::addSoundParameters(
             paramsContainer,
             "mgn",
             0.0f,
-            30.0f,
+            200.0f,
             [] (const Sensors &sensors) { return magnitudeSynth(sensors.magneticX, sensors.magneticY, sensors.magneticZ); },
             paramsCount);
 
@@ -329,7 +329,7 @@ void Assignments::addSoundParameters(
             paramsContainer,
             "lgt",
             0.0f,
-            500.0f,
+            100.0f,
             [] (const Sensors &sensors) { return sensors.light; },
             paramsCount);
 
@@ -340,7 +340,7 @@ void Assignments::addSoundParameters(
             processor,
             paramsContainer,
             "prs",
-            700.0f,
+            900.0f,
             1000.0f,
             [] (const Sensors &sensors) { return sensors.pressure; },
             paramsCount);
