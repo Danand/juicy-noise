@@ -129,7 +129,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        rotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        rotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR)
         gravity = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)
         magneticField = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
         light = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
@@ -184,7 +184,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         }
 
         when (sensorEvent.sensor.type) {
-            Sensor.TYPE_GYROSCOPE-> {
+            Sensor.TYPE_GYROSCOPE -> {
                 sensorsState.value.angularSpeedX = sensorEvent.values[0]
                 sensorsState.value.angularSpeedY = sensorEvent.values[1]
                 sensorsState.value.angularSpeedZ = sensorEvent.values[2]
@@ -194,7 +194,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                 sensorsState.value.accelerationY = sensorEvent.values[1]
                 sensorsState.value.accelerationZ = sensorEvent.values[2]
             }
-            Sensor.TYPE_ROTATION_VECTOR -> {
+            Sensor.TYPE_GAME_ROTATION_VECTOR -> {
                 sensorsState.value.rotationX = sensorEvent.values[0]
                 sensorsState.value.rotationY = sensorEvent.values[1]
                 sensorsState.value.rotationZ = sensorEvent.values[2]
