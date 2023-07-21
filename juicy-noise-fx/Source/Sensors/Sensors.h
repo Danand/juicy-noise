@@ -29,96 +29,28 @@ struct Sensors
     float cellSignalStrength = 0.0f;
     float wifiSignalStrength = 0.0f;
 
-    inline Sensors max()
+    static inline Sensors avg(const Sensors &left, const Sensors &right)
     {
-        return
-        {
-            longitude = 1.0f,
-            latitude = 1.0f,
-            angularSpeedX = 1.0f,
-            angularSpeedY = 1.0f,
-            angularSpeedZ = 1.0f,
-            accelerationX = 1.0f,
-            accelerationY = 1.0f,
-            accelerationZ = 1.0f,
-            magneticX = 1.0f,
-            magneticY = 1.0f,
-            magneticZ = 1.0f,
-            light = 1.0f,
-            pressure = 1.0f,
-            proximity = 1.0f,
-            cellSignalStrength = 1.0f,
-            wifiSignalStrength = 1.0f
-        };
-    }
+        Sensors result;
 
-    inline Sensors min()
-    {
-        return
-        {
-            longitude = -1.0f,
-            latitude = -1.0f,
-            angularSpeedX = -1.0f,
-            angularSpeedY = -1.0f,
-            angularSpeedZ = -1.0f,
-            accelerationX = -1.0f,
-            accelerationY = -1.0f,
-            accelerationZ = -1.0f,
-            magneticX = -1.0f,
-            magneticY = -1.0f,
-            magneticZ = -1.0f,
-            light = -1.0f,
-            pressure = -1.0f,
-            proximity = -1.0f,
-            cellSignalStrength = -1.0f,
-            wifiSignalStrength = -1.0f
-        };
-    }
+        result.longitude = (left.longitude + right.longitude) / 2.0f;
+        result.latitude = (left.latitude + right.latitude) / 2.0f;
+        result.angularSpeedX = (left.angularSpeedX + right.angularSpeedX) / 2.0f;
+        result.angularSpeedY = (left.angularSpeedY + right.angularSpeedY) / 2.0f;
+        result.angularSpeedZ = (left.angularSpeedZ + right.angularSpeedZ) / 2.0f;
+        result.accelerationX = (left.accelerationX + right.accelerationX) / 2.0f;
+        result.accelerationY = (left.accelerationY + right.accelerationY) / 2.0f;
+        result.accelerationZ = (left.accelerationZ + right.accelerationZ) / 2.0f;
+        result.magneticX = (left.magneticX + right.magneticX) / 2.0f;
+        result.magneticY = (left.magneticY + right.magneticY) / 2.0f;
+        result.magneticZ = (left.magneticZ + right.magneticZ) / 2.0f;
+        result.light = (left.light + right.light) / 2.0f;
+        result.pressure = (left.pressure + right.pressure) / 2.0f;
+        result.proximity = (left.proximity + right.proximity) / 2.0f;
+        result.cellSignalStrength = (left.cellSignalStrength + right.cellSignalStrength) / 2.0f;
+        result.wifiSignalStrength = (left.wifiSignalStrength + right.wifiSignalStrength) / 2.0f;
 
-    inline Sensors operator * (const Sensors &other)
-    {
-        return
-        {
-            longitude = longitude * other.longitude,
-            latitude =  latitude * other.latitude,
-            angularSpeedX = angularSpeedX * other.angularSpeedX,
-            angularSpeedY = angularSpeedY * other.angularSpeedY,
-            angularSpeedZ = angularSpeedZ * other.angularSpeedZ,
-            accelerationX = accelerationX * other.accelerationX,
-            accelerationY = accelerationY * other.accelerationY,
-            accelerationZ = accelerationZ * other.accelerationZ,
-            magneticX = magneticX * other.magneticX,
-            magneticY = magneticY * other.magneticY,
-            magneticZ = magneticZ * other.magneticZ,
-            light = light * other.light,
-            pressure = pressure * other.pressure,
-            proximity = proximity * other.proximity,
-            cellSignalStrength = cellSignalStrength * other.cellSignalStrength,
-            wifiSignalStrength = wifiSignalStrength * other.wifiSignalStrength
-        };
-    }
-
-    inline Sensors operator / (const Sensors &other)
-    {
-        return
-        {
-            longitude = longitude / other.longitude,
-            latitude =  latitude / other.latitude,
-            angularSpeedX = angularSpeedX / other.angularSpeedX,
-            angularSpeedY = angularSpeedY / other.angularSpeedY,
-            angularSpeedZ = angularSpeedZ / other.angularSpeedZ,
-            accelerationX = accelerationX / other.accelerationX,
-            accelerationY = accelerationY / other.accelerationY,
-            accelerationZ = accelerationZ / other.accelerationZ,
-            magneticX = magneticX / other.magneticX,
-            magneticY = magneticY / other.magneticY,
-            magneticZ = magneticZ / other.magneticZ,
-            light = light / other.light,
-            pressure = pressure / other.pressure,
-            proximity = proximity / other.proximity,
-            cellSignalStrength = cellSignalStrength / other.cellSignalStrength,
-            wifiSignalStrength = wifiSignalStrength / other.wifiSignalStrength
-        };
+        return result;
     }
 };
 

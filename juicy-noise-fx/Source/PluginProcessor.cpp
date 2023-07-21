@@ -191,8 +191,11 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, 
 
     if (sensorsQueue.empty() == false)
     {
-        this->sensors = sensorsQueue.front();
-        sensorsQueue.pop();
+        while (sensorsQueue.empty() == false)
+        {
+            this->sensors = Sensors::avg(this->sensors, sensorsQueue.front());
+            sensorsQueue.pop();
+        }
     }
     else
     {
