@@ -25,4 +25,37 @@ class Sensors {
     @Expose var proximity: Float = 0f
     @Expose var cellSignalStrength: Float = 0f
     @Expose var wifiSignalStrength: Float = 0f
+
+    override fun hashCode(): Int =
+        super.hashCode() xor
+        longitude.hashCode() xor
+        latitude.hashCode() xor
+        angularSpeedX.hashCode() xor
+        angularSpeedY.hashCode() xor
+        angularSpeedZ.hashCode() xor
+        accelerationX.hashCode() xor
+        accelerationY.hashCode() xor
+        accelerationZ.hashCode() xor
+        rotationX.hashCode() xor
+        rotationY.hashCode() xor
+        rotationZ.hashCode() xor
+        gravityX.hashCode() xor
+        gravityY.hashCode() xor
+        gravityZ.hashCode() xor
+        magneticX.hashCode() xor
+        magneticY.hashCode() xor
+        magneticZ.hashCode() xor
+        light.hashCode() xor
+        pressure.hashCode() xor
+        proximity.hashCode() xor
+        cellSignalStrength.hashCode() xor
+        wifiSignalStrength.hashCode();
+
+    override fun equals(other: Any?): Boolean {
+        return if (other is Sensors) {
+            this.hashCode() == other.hashCode()
+        } else {
+            false
+        }
+    }
 }

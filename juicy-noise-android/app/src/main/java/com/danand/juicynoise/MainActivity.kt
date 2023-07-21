@@ -32,7 +32,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -236,7 +238,8 @@ fun ColumnMain(
     locationClient: FusedLocationProviderClient,
 ) {
     Column(
-        modifier = Modifier.padding(36.dp),
+        modifier = Modifier.padding(36.dp)
+                           .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -322,6 +325,23 @@ fun ColumnMain(
             }
         }
 
+        Spacer(modifier = Modifier.height(24.dp))
+
+        enumerateSensors(sensorsState.value).forEach {
+            OutlinedTextField(
+                value = it.second.toString(),
+                onValueChange = { },
+                label = {
+                    Text(it.first)
+                },
+                modifier = Modifier.fillMaxWidth()
+                                   .height(72.dp),
+                readOnly = true
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+        };
+
         if (errorState.value != null) {
             AlertDialog(
                 onDismissRequest = {
@@ -345,6 +365,35 @@ fun ColumnMain(
             )
         }
     }
+}
+
+fun enumerateSensors(sensors: Sensors): List<Pair<String, Float>> {
+    val result = mutableListOf<Pair<String, Float>>()
+
+    result.add(Pair("longitude", sensors.longitude))
+    result.add(Pair("latitude", sensors.latitude))
+    result.add(Pair("angularSpeedX", sensors.angularSpeedX))
+    result.add(Pair("angularSpeedY", sensors.angularSpeedY))
+    result.add(Pair("angularSpeedZ", sensors.angularSpeedZ))
+    result.add(Pair("accelerationX", sensors.accelerationX))
+    result.add(Pair("accelerationY", sensors.accelerationY))
+    result.add(Pair("accelerationZ", sensors.accelerationZ))
+    result.add(Pair("rotationX", sensors.rotationX))
+    result.add(Pair("rotationY", sensors.rotationY))
+    result.add(Pair("rotationZ", sensors.rotationZ))
+    result.add(Pair("gravityX", sensors.gravityX))
+    result.add(Pair("gravityY", sensors.gravityY))
+    result.add(Pair("gravityZ", sensors.gravityZ))
+    result.add(Pair("magneticX", sensors.magneticX))
+    result.add(Pair("magneticY", sensors.magneticY))
+    result.add(Pair("magneticZ", sensors.magneticZ))
+    result.add(Pair("light", sensors.light))
+    result.add(Pair("pressure", sensors.pressure))
+    result.add(Pair("proximity", sensors.proximity))
+    result.add(Pair("cellSignalStrength", sensors.cellSignalStrength))
+    result.add(Pair("wifiSignalStrength", sensors.wifiSignalStrength))
+
+    return result
 }
 
 fun checkIsValidPort(value: String): Boolean  =
