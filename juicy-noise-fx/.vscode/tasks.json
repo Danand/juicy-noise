@@ -39,7 +39,7 @@
       "label": "clean-vst3-impl",
       "detail": "Clean implementation-specific VST3 plugin build outputs",
       "type": "shell",
-      "command": "find . -type f -name '*.o' -not -path '*include_*' -print0 | xargs -0 rm -f",
+      "command": "find . -type f -name '*.o' -or -name '*.d' | grep -v 'include_' | xargs rm -f",
       "presentation": {
         "reveal": "silent",
       },
