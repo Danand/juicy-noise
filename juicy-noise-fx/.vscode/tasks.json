@@ -18,14 +18,28 @@
       }
     },
     {
-      "label": "clean-vst3",
-      "detail": "Clean VST3 plugin build outputs",
+      "label": "clean-vst3-all",
+      "detail": "Clean all VST3 plugin build outputs",
       "type": "shell",
       "command": "rm",
       "args": [
         "-rf",
         "build",
       ],
+      "presentation": {
+        "reveal": "silent",
+      },
+      "group": "none",
+      "options": {
+        "cwd": "${workspaceFolder}/Builds/LinuxMakefile",
+      },
+      "hide": true,
+    },
+    {
+      "label": "clean-vst3-impl",
+      "detail": "Clean implementation-specific VST3 plugin build outputs",
+      "type": "shell",
+      "command": "find . -type f -name '*.o' -not -path '*include_*' -print0 | xargs -0 rm -f",
       "presentation": {
         "reveal": "silent",
       },
