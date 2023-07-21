@@ -24,7 +24,8 @@ private:
         std::string name,
         int mapIdx,
         FloatFunc floatFunc,
-        int &paramsCount);
+        int &paramsCount,
+        float defaultValue = 0.0f);
 
     static SensorParamTuple addSensorParam(
         juce::AudioProcessor* processor,

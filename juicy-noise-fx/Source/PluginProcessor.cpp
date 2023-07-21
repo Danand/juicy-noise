@@ -194,6 +194,11 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, 
         this->sensors = sensorsQueue.front();
         sensorsQueue.pop();
     }
+    else
+    {
+        Sensors sensorsEmpty;
+        this->sensors = sensorsEmpty;
+    }
 
     sensorsMutex.unlock();
 
@@ -214,7 +219,7 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, 
 
     for (int sample = 0; sample < numSamples; ++sample)
     {
-        double time = this->samplesCountInSecond / static_cast<float>(this->sampleRate);
+        float time = this->samplesCountInSecond / static_cast<float>(this->sampleRate);
 
         float inputLeft = channelDataLeft[sample];
         float inputRight = channelDataRight[sample];
@@ -231,17 +236,19 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, 
             {
                 if (sensorsParam.mapIdxParam->get() == synthParam.mapIdx)
                 {
-                    float normalizedSensorValue = inverseLerp(
+                    float sensorValueRaw = sensorsParam.sensorFunc(this->sensors);
+
+                    float sensorValueNormalized = inverseLerp(
                         sensorsParam.valueMinParam->get(),
                         sensorsParam.valueMaxParam->get(),
-                        sensorsParam.sensorFunc(this->sensors));
+                        sensorValueRaw);
 
                     int freq = static_cast<int>(
                         ceil(
                             lerp(
                                 synthParam.valueMinParam->get(),
                                 synthParam.valueMaxParam->get(),
-                                normalizedSensorValue)));
+                                sensorValueNormalized)));
 
                     float phaseLeft = 0.0f;
 
@@ -275,18 +282,18 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, 
             {
                 if (sensorsParam.mapIdxParam->get() == masterParamFloat.mapIdx)
                 {
-                    float normalizedSensorValue = inverseLerp(
+                    float sensorValueNormalized = inverseLerp(
                         sensorsParam.valueMinParam->get(),
                         sensorsParam.valueMaxParam->get(),
                         sensorsParam.sensorFunc(this->sensors));
 
                     outputLeft = masterParamFloat.floatFunc(
                         outputLeft,
-                        masterParamFloat.valueParam->get() * normalizedSensorValue);
+                        masterParamFloat.valueParam->get() * sensorValueNormalized);
 
                     outputRight = masterParamFloat.floatFunc(
                         outputRight,
-                        masterParamFloat.valueParam->get() * normalizedSensorValue);
+                        masterParamFloat.valueParam->get() * sensorValueNormalized);
                 }
             }
         }

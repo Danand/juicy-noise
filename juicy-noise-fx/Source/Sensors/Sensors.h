@@ -6,28 +6,28 @@
 
 struct Sensors
 {
-    float longitude;
-    float latitude;
-    float angularSpeedX;
-    float angularSpeedY;
-    float angularSpeedZ;
-    float accelerationX;
-    float accelerationY;
-    float accelerationZ;
-    float rotationX;
-    float rotationY;
-    float rotationZ;
-    float gravityX;
-    float gravityY;
-    float gravityZ;
-    float magneticX;
-    float magneticY;
-    float magneticZ;
-    float light;
-    float pressure;
-    float proximity;
-    float cellSignalStrength;
-    float wifiSignalStrength;
+    float longitude = 0.0f;
+    float latitude = 0.0f;
+    float angularSpeedX = 0.0f;
+    float angularSpeedY = 0.0f;
+    float angularSpeedZ = 0.0f;
+    float accelerationX = 0.0f;
+    float accelerationY = 0.0f;
+    float accelerationZ = 0.0f;
+    float rotationX = 0.0f;
+    float rotationY = 0.0f;
+    float rotationZ = 0.0f;
+    float gravityX = 0.0f;
+    float gravityY = 0.0f;
+    float gravityZ = 0.0f;
+    float magneticX = 0.0f;
+    float magneticY = 0.0f;
+    float magneticZ = 0.0f;
+    float light = 0.0f;
+    float pressure = 0.0f;
+    float proximity = 0.0f;
+    float cellSignalStrength = 0.0f;
+    float wifiSignalStrength = 0.0f;
 
     inline Sensors max()
     {

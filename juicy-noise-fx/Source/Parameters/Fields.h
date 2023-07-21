@@ -29,6 +29,18 @@ juce::AudioParameterFloat* thresholdMinLatitudeParameter; \
 juce::AudioParameterFloat* thresholdMaxLatitudeParameter; \
 juce::AudioParameterInt* mapLatitudeParameter; \
  \
+juce::AudioParameterFloat* thresholdMinRotationXParameter; \
+juce::AudioParameterFloat* thresholdMaxRotationXParameter; \
+juce::AudioParameterInt* mapRotationXParameter; \
+ \
+juce::AudioParameterFloat* thresholdMinRotationYParameter; \
+juce::AudioParameterFloat* thresholdMaxRotationYParameter; \
+juce::AudioParameterInt* mapRotationYParameter; \
+ \
+juce::AudioParameterFloat* thresholdMinRotationZParameter; \
+juce::AudioParameterFloat* thresholdMaxRotationZParameter; \
+juce::AudioParameterInt* mapRotationZParameter; \
+ \
 juce::AudioParameterFloat* thresholdMinAngularSpeedParameter; \
 juce::AudioParameterFloat* thresholdMaxAngularSpeedParameter; \
 juce::AudioParameterInt* mapAngularSpeedParameter; \

@@ -54,7 +54,8 @@ juce::AudioParameterFloat* Assignments::addMasterParamFloat(
     std::string name,
     int mapIdx,
     FloatFunc floatFunc,
-    int &paramsCount)
+    int &paramsCount,
+    float defaultValue)
 {
     auto fullName = name + "_" + std::to_string(mapIdx);
 
@@ -63,7 +64,7 @@ juce::AudioParameterFloat* Assignments::addMasterParamFloat(
         fullName,
         0.0f,
         1.0f,
-        0.0f);
+        defaultValue);
 
     processor->addParameter(parameter);
 
@@ -161,7 +162,8 @@ void Assignments::addSoundParameters(
         "clp",
         1,
         [] (float input, float modifier) { return std::min(input, modifier); },
-        paramsCount);
+        paramsCount,
+        1.0f);
 
     paramsContainer.feedbackTimeParameter = addMasterParamFloat(
         processor,
@@ -248,14 +250,50 @@ void Assignments::addSoundParameters(
             paramsCount);
 
     std::tie(
+        paramsContainer.thresholdMaxRotationXParameter,
+        paramsContainer.thresholdMinRotationXParameter,
+        paramsContainer.mapRotationXParameter) = addSensorParam(
+            processor,
+            paramsContainer,
+            "rot_x",
+            0.0f,
+            1.0f,
+            [] (const Sensors &sensors) { return sensors.rotationX; },
+            paramsCount);
+
+    std::tie(
+        paramsContainer.thresholdMaxRotationYParameter,
+        paramsContainer.thresholdMinRotationYParameter,
+        paramsContainer.mapRotationYParameter) = addSensorParam(
+            processor,
+            paramsContainer,
+            "rot_y",
+            0.0f,
+            1.0f,
+            [] (const Sensors &sensors) { return sensors.rotationY; },
+            paramsCount);
+
+    std::tie(
+        paramsContainer.thresholdMaxRotationZParameter,
+        paramsContainer.thresholdMinRotationZParameter,
+        paramsContainer.mapRotationZParameter) = addSensorParam(
+            processor,
+            paramsContainer,
+            "rot_z",
+            0.0f,
+            1.0f,
+            [] (const Sensors &sensors) { return sensors.rotationZ; },
+            paramsCount);
+
+    std::tie(
         paramsContainer.thresholdMinAngularSpeedParameter,
         paramsContainer.thresholdMaxAngularSpeedParameter,
         paramsContainer.mapAngularSpeedParameter) = addSensorParam(
             processor,
             paramsContainer,
             "ang",
-            -100.0f,
-            100.0f,
+            0.0f,
+            30.0f,
             [] (const Sensors &sensors) { return magnitudeSynth(sensors.angularSpeedX, sensors.angularSpeedY, sensors.angularSpeedZ); },
             paramsCount);
 
@@ -266,8 +304,8 @@ void Assignments::addSoundParameters(
             processor,
             paramsContainer,
             "acl",
-            -100.0f,
-            100.0f,
+            0.0f,
+            30.0f,
             [] (const Sensors &sensors) { return magnitudeSynth(sensors.accelerationX, sensors.accelerationY, sensors.accelerationZ); },
             paramsCount);
 
@@ -278,8 +316,8 @@ void Assignments::addSoundParameters(
             processor,
             paramsContainer,
             "mgn",
-            -100.0f,
-            100.0f,
+            0.0f,
+            30.0f,
             [] (const Sensors &sensors) { return magnitudeSynth(sensors.magneticX, sensors.magneticY, sensors.magneticZ); },
             paramsCount);
 
@@ -291,7 +329,7 @@ void Assignments::addSoundParameters(
             paramsContainer,
             "lgt",
             0.0f,
-            10000.0f,
+            500.0f,
             [] (const Sensors &sensors) { return sensors.light; },
             paramsCount);
 
