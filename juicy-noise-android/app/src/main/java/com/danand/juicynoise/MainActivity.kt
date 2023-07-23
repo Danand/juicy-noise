@@ -44,12 +44,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
@@ -294,8 +298,9 @@ fun ColumnMain(
     }
 
     Column(
-        modifier = Modifier.padding(36.dp)
-                           .verticalScroll(rememberScrollState()),
+        modifier = Modifier
+            .padding(36.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -313,8 +318,9 @@ fun ColumnMain(
                 keyboardType = KeyboardType.NumberPassword
             ),
             isError = checkIsValidIp(ipState.value) == false,
-            modifier = Modifier.fillMaxWidth()
-                               .height(72.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -332,8 +338,9 @@ fun ColumnMain(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
             ),
-            modifier = Modifier.fillMaxWidth()
-                               .height(72.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -349,8 +356,9 @@ fun ColumnMain(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
             ),
-            modifier = Modifier.fillMaxWidth()
-                               .height(72.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -383,20 +391,35 @@ fun ColumnMain(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        val orange = Color.hsv(0f, 0.9843f, 0.9843f)
+
         enumerateSensors(sensorsState.value).forEach {
             OutlinedTextField(
                 value = it.second.toString(),
                 onValueChange = { },
                 label = {
-                    Text(it.first)
+                    Text(
+                        text = it.first,
+                        fontFamily = FontFamily.Monospace,
+                    )
                 },
-                modifier = Modifier.fillMaxWidth()
-                                   .height(72.dp),
-                readOnly = true
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                readOnly = true,
+                textStyle = TextStyle(
+                    fontFamily = FontFamily.Monospace,
+                ),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    disabledLabelColor = orange,
+                    focusedLabelColor = orange,
+                    errorLabelColor = orange,
+                    unfocusedLabelColor = orange,
+                )
             )
 
             Spacer(modifier = Modifier.height(12.dp))
-        };
+        }
 
         if (errorState.value != null) {
             AlertDialog(
