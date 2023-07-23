@@ -16,6 +16,7 @@ import android.hardware.SensorManager
 import android.location.Location
 import android.net.ConnectivityManager
 import android.net.ConnectivityManager.NetworkCallback
+import android.net.LinkProperties
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
@@ -44,6 +45,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
@@ -62,6 +64,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.DataOutputStream
+import java.net.InetSocketAddress
 import java.net.Socket
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -106,7 +109,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
         telephonyManager.registerTelephonyCallback(this.mainExecutor, telephonyCallback)
 
-        val connectivityManager  = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
         val networkCallback = object : NetworkCallback() {
             override fun onCapabilitiesChanged(
@@ -149,6 +152,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                     audioBufferSizeState,
                     sampleRateState,
                     locationClient,
+                    connectivityManager,
                 )
             }
         }
@@ -226,6 +230,48 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) { }
 }
 
+fun findSubnet(connectivityManager: ConnectivityManager): String? {
+    val linkProperties: LinkProperties =  connectivityManager.getLinkProperties(connectivityManager.activeNetwork) as LinkProperties
+    val linkAddress = linkProperties.linkAddresses.firstOrNull { it?.address?.hostAddress != null } ?: return null
+
+    val addressParts = linkAddress.address.hostAddress!!.split(".")
+
+    if (addressParts.count() > 2) {
+        return addressParts.subList(0, 2).joinToString(".")
+    }
+
+    return null
+}
+
+fun findFirstAddressWithOpenedPort(subnet: String?, port: UShort): String? {
+    if (subnet == null) {
+        return null
+    }
+
+    for (subnetPostfix in 1..255) {
+        val address = "$subnet.$subnetPostfix"
+
+        val socket = Socket()
+
+        try {
+            socket.connect(
+                InetSocketAddress(
+                    address,
+                    port.toInt()
+                ),
+                200
+            )
+
+            return address
+        } catch (_ : Exception) {
+        } finally {
+            socket.close()
+        }
+    }
+
+    return null
+}
+
 @Composable
 fun ColumnMain(
     ipState: MutableState<String>,
@@ -236,7 +282,17 @@ fun ColumnMain(
     audioBufferSizeState: MutableState<AudioBufferSize>,
     sampleRateState: MutableState<Int>,
     locationClient: FusedLocationProviderClient,
+    connectivityManager: ConnectivityManager,
 ) {
+    LaunchedEffect(portState) {
+        val subnet = findSubnet(connectivityManager)
+        val suggestedIp = findFirstAddressWithOpenedPort(subnet, portState.value)
+
+        if (suggestedIp != null) {
+            ipState.value = suggestedIp
+        }
+    }
+
     Column(
         modifier = Modifier.padding(36.dp)
                            .verticalScroll(rememberScrollState()),
@@ -477,7 +533,7 @@ fun ButtonDisconnect(
 }
 
 fun createAddressState(): AddressState = AddressState(
-    ip = mutableStateOf("192.168.0.1"),
+    ip = mutableStateOf("192.168.0.128"),
     port = mutableStateOf(6660u),
 )
 
