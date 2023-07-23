@@ -2,7 +2,7 @@ package com.danand.juicynoise
 
 import com.google.gson.annotations.Expose
 
-class Sensors {
+class Sensors : Cloneable {
     @Expose var longitude: Float = 0f
     @Expose var latitude: Float = 0f
     @Expose var angularSpeedX: Float = 0f
@@ -26,36 +26,32 @@ class Sensors {
     @Expose var cellSignalStrength: Float = 0f
     @Expose var wifiSignalStrength: Float = 0f
 
-    override fun hashCode(): Int =
-        super.hashCode() xor
-        longitude.hashCode() xor
-        latitude.hashCode() xor
-        angularSpeedX.hashCode() xor
-        angularSpeedY.hashCode() xor
-        angularSpeedZ.hashCode() xor
-        accelerationX.hashCode() xor
-        accelerationY.hashCode() xor
-        accelerationZ.hashCode() xor
-        rotationX.hashCode() xor
-        rotationY.hashCode() xor
-        rotationZ.hashCode() xor
-        gravityX.hashCode() xor
-        gravityY.hashCode() xor
-        gravityZ.hashCode() xor
-        magneticX.hashCode() xor
-        magneticY.hashCode() xor
-        magneticZ.hashCode() xor
-        light.hashCode() xor
-        pressure.hashCode() xor
-        proximity.hashCode() xor
-        cellSignalStrength.hashCode() xor
-        wifiSignalStrength.hashCode();
+    public override fun clone(): Sensors {
+        val clone = Sensors()
 
-    override fun equals(other: Any?): Boolean {
-        return if (other is Sensors) {
-            this.hashCode() == other.hashCode()
-        } else {
-            false
-        }
+        clone.longitude = longitude
+        clone.latitude = latitude
+        clone.angularSpeedX = angularSpeedX
+        clone.angularSpeedY = angularSpeedY
+        clone.angularSpeedZ = angularSpeedZ
+        clone.accelerationX = accelerationX
+        clone.accelerationY = accelerationY
+        clone.accelerationZ = accelerationZ
+        clone.rotationX = rotationX
+        clone.rotationY = rotationY
+        clone.rotationZ = rotationZ
+        clone.gravityX = gravityX
+        clone.gravityY = gravityY
+        clone.gravityZ = gravityZ
+        clone.magneticX = magneticX
+        clone.magneticY = magneticY
+        clone.magneticZ = magneticZ
+        clone.light = light
+        clone.pressure = pressure
+        clone.proximity = proximity
+        clone.cellSignalStrength = cellSignalStrength
+        clone.wifiSignalStrength = wifiSignalStrength
+
+        return clone
     }
 }

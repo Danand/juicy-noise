@@ -193,6 +193,9 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             return
         }
 
+        // HACK: Make sensors update in view:
+        sensorsState.value = sensorsState.value.clone()
+
         when (sensorEvent.sensor.type) {
             Sensor.TYPE_GYROSCOPE -> {
                 sensorsState.value.angularSpeedX = sensorEvent.values[0]
