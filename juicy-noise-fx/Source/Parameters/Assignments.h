@@ -10,6 +10,12 @@ public:
         ParamsContainer &paramsContainer);
 
 private:
+    static juce::AudioParameterInt* addParamInt(
+        juce::AudioProcessor* processor,
+        std::string name,
+        int min,
+        int max);
+
     static SynthParamFreqTuple addSynthParam(
         juce::AudioProcessor* processor,
         ParamsContainer &paramsContainer,

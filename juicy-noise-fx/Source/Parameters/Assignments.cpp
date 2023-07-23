@@ -2,6 +2,24 @@
 #include "../Constants/Freq.h"
 #include "../Utils/Synths.h"
 
+juce::AudioParameterInt* Assignments::addParamInt(
+    juce::AudioProcessor* processor,
+    std::string name,
+    int min,
+    int max)
+{
+    juce::AudioParameterInt* parameter = new juce::AudioParameterInt(
+        name,
+        name,
+        min,
+        max,
+        min);
+
+    processor->addParameter(parameter);
+
+    return parameter;
+}
+
 SynthParamFreqTuple Assignments::addSynthParam(
     juce::AudioProcessor* processor,
     ParamsContainer &paramsContainer,
@@ -148,14 +166,11 @@ void Assignments::addSoundParameters(
 {
     // Parameters are non-mapped to sensors:
 
-    paramsContainer.stereoPhaseParameter = new juce::AudioParameterInt(
-        "str_phs",
+    paramsContainer.stereoPhaseParameter = addParamInt(
+        processor,
         "str_phs",
         0,
-        1000,
-        0);
-
-    processor->addParameter(paramsContainer.stereoPhaseParameter);
+        1000);
 
     // Parameters are mapped to sensors:
 
