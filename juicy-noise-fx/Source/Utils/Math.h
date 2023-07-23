@@ -3,12 +3,34 @@
 #include <cmath>
 #include <random>
 
+using SwapSignalTuple = std::tuple<
+    bool,
+    float>;
+
 float magnitude(float x, float y, float z)
 {
     return sqrt(
         (x * x) +
         (y * y) +
         (z * z));
+}
+
+SwapSignalTuple resolveBlend(float previous, float current, float threshold)
+{
+    if (threshold - current < 0.01f)
+    {
+        return SwapSignalTuple(
+            true,
+            current);
+    }
+    else
+    {
+        return SwapSignalTuple(
+            false,
+            std::max(
+                previous,
+                current));
+    }
 }
 
 float lerp(float from, float to, float ratio)

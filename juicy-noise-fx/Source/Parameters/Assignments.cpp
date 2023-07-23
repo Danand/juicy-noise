@@ -146,6 +146,19 @@ void Assignments::addSoundParameters(
     juce::AudioProcessor* processor,
     ParamsContainer &paramsContainer)
 {
+    // Parameters are non-mapped to sensors:
+
+    paramsContainer.stereoPhaseParameter = new juce::AudioParameterInt(
+        "str_phs",
+        "str_phs",
+        0,
+        1000,
+        0);
+
+    processor->addParameter(paramsContainer.stereoPhaseParameter);
+
+    // Parameters are mapped to sensors:
+
     int paramsCount = 0;
 
     paramsContainer.amplifyParameter = addMasterParamFloat(

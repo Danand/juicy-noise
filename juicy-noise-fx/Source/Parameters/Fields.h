@@ -3,6 +3,8 @@
 #include "FixedArrays.h"
 
 #define JN_PARAMETERS \
+juce::AudioParameterInt* stereoPhaseParameter; \
+ \
 juce::AudioParameterFloat* amplifyParameter; \
 juce::AudioParameterFloat* clipParameter; \
  \

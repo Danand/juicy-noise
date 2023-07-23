@@ -12,6 +12,7 @@
 
 #include "PluginProcessor.h"
 
+#include "Constants/Freq.h"
 #include "Parameters/Assignments.h"
 #include "Utils/Math.h"
 
@@ -261,25 +262,52 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, 
                                 synthParam.valueMaxParam->get(),
                                 sensorValueNormalized)));
 
-                    float phaseLeft = 0.0f;
+                    float phaseLeft = this->paramsContainer.stereoPhaseParameter->get() * 0.001f;
 
                     float synthOutputLeft = synthParam.synthFunc(
                         time,
                         freq,
-                        0.85f,
+                        DEFAULT_AMPLITUDE,
                         phaseLeft);
 
-                    synthOutputBlendedLeft = std::max(synthOutputBlendedLeft, synthOutputLeft);
+                    bool needSwapLeft;
+                    float synthOutputSwappedLeft;
 
-                    float phaseRight = 0.001f;
+                    std::tie(
+                        needSwapLeft,
+                        synthOutputSwappedLeft) = resolveBlend(
+                            synthOutputBlendedLeft,
+                            synthOutputLeft,
+                            DEFAULT_AMPLITUDE);
+
+                    float phaseRight = 0.0f;
 
                     float synthOutputRight = synthParam.synthFunc(
                         time,
                         freq,
-                        0.85f,
+                        DEFAULT_AMPLITUDE,
                         phaseRight);
 
-                    synthOutputBlendedRight = std::max(synthOutputBlendedRight, synthOutputRight);
+                    bool needSwapRight;
+                    float synthOutputSwappedRight;
+
+                    std::tie(
+                        needSwapRight,
+                        synthOutputSwappedRight) = resolveBlend(
+                            synthOutputBlendedRight,
+                            synthOutputRight,
+                            DEFAULT_AMPLITUDE);
+
+                    if (needSwapLeft ^ needSwapRight)
+                    {
+                        synthOutputBlendedLeft = synthOutputRight;
+                        synthOutputBlendedRight = synthOutputLeft;
+                    }
+                    else
+                    {
+                        synthOutputBlendedLeft = std::max(synthOutputBlendedLeft, synthOutputLeft);
+                        synthOutputBlendedRight = std::max(synthOutputBlendedRight, synthOutputRight);
+                    }
                 }
             }
         }
