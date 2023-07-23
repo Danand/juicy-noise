@@ -244,72 +244,80 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, 
 
         for (SynthParams synthParam : this->paramsContainer.synthParams)
         {
-            for (SensorParams sensorsParam : this->paramsContainer.sensorsParams)
+            float sensorValueNormalizedMax = -1.0f;
+
+            for (SensorParams sensorParams : this->paramsContainer.sensorsParams)
             {
-                if (sensorsParam.mapIdxParam->get() == synthParam.mapIdx)
+                if (sensorParams.mapIdxParam->get() == synthParam.mapIdx)
                 {
-                    float sensorValueRaw = sensorsParam.sensorFunc(this->sensors);
+                    float sensorValueRaw = sensorParams.sensorFunc(this->sensors);
 
                     float sensorValueNormalized = inverseLerp(
-                        sensorsParam.valueMinParam->get(),
-                        sensorsParam.valueMaxParam->get(),
+                        sensorParams.valueMinParam->get(),
+                        sensorParams.valueMaxParam->get(),
                         sensorValueRaw);
 
-                    int freq = static_cast<int>(
-                        ceil(
-                            lerp(
-                                synthParam.valueMinParam->get(),
-                                synthParam.valueMaxParam->get(),
-                                sensorValueNormalized)));
-
-                    float phaseLeft = this->paramsContainer.stereoPhaseParameter->get() * 0.001f;
-
-                    float synthOutputLeft = synthParam.synthFunc(
-                        time,
-                        freq,
-                        DEFAULT_AMPLITUDE,
-                        phaseLeft);
-
-                    bool needSwapLeft;
-                    float synthOutputSwappedLeft;
-
-                    std::tie(
-                        needSwapLeft,
-                        synthOutputSwappedLeft) = resolveBlend(
-                            synthOutputBlendedLeft,
-                            synthOutputLeft,
-                            DEFAULT_AMPLITUDE);
-
-                    float phaseRight = 0.0f;
-
-                    float synthOutputRight = synthParam.synthFunc(
-                        time,
-                        freq,
-                        DEFAULT_AMPLITUDE,
-                        phaseRight);
-
-                    bool needSwapRight;
-                    float synthOutputSwappedRight;
-
-                    std::tie(
-                        needSwapRight,
-                        synthOutputSwappedRight) = resolveBlend(
-                            synthOutputBlendedRight,
-                            synthOutputRight,
-                            DEFAULT_AMPLITUDE);
-
-                    if (needSwapLeft ^ needSwapRight)
+                    if (sensorValueNormalized > sensorValueNormalizedMax)
                     {
-                        synthOutputBlendedLeft = synthOutputRight;
-                        synthOutputBlendedRight = synthOutputLeft;
-                    }
-                    else
-                    {
-                        synthOutputBlendedLeft = std::max(synthOutputBlendedLeft, synthOutputLeft);
-                        synthOutputBlendedRight = std::max(synthOutputBlendedRight, synthOutputRight);
+                        sensorValueNormalizedMax = sensorValueNormalized;
                     }
                 }
             }
+
+            int freq = static_cast<int>(
+                ceil(
+                    lerp(
+                        synthParam.valueMinParam->get(),
+                        synthParam.valueMaxParam->get(),
+                        sensorValueNormalizedMax)));
+
+            float phaseLeft = this->paramsContainer.stereoPhaseParameter->get() * 0.001f;
+
+            float synthOutputLeft = synthParam.synthFunc(
+                time,
+                freq,
+                DEFAULT_AMPLITUDE,
+                phaseLeft);
+
+            bool needSwapLeft;
+            float synthOutputSwappedLeft;
+
+            std::tie(
+                needSwapLeft,
+                synthOutputSwappedLeft) = resolveBlend(
+                    synthOutputBlendedLeft,
+                    synthOutputLeft,
+                    DEFAULT_AMPLITUDE);
+
+            float phaseRight = 0.0f;
+
+            float synthOutputRight = synthParam.synthFunc(
+                time,
+                freq,
+                DEFAULT_AMPLITUDE,
+                phaseRight);
+
+            bool needSwapRight;
+            float synthOutputSwappedRight;
+
+            std::tie(
+                needSwapRight,
+                synthOutputSwappedRight) = resolveBlend(
+                    synthOutputBlendedRight,
+                    synthOutputRight,
+                    DEFAULT_AMPLITUDE);
+
+            if (needSwapLeft ^ needSwapRight)
+            {
+                synthOutputBlendedLeft = synthOutputRight;
+                synthOutputBlendedRight = synthOutputLeft;
+            }
+            else
+            {
+                synthOutputBlendedLeft = std::max(synthOutputBlendedLeft, synthOutputLeft);
+                synthOutputBlendedRight = std::max(synthOutputBlendedRight, synthOutputRight);
+            }
+
         }
 
         outputLeft = synthOutputBlendedLeft;
@@ -317,14 +325,14 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, 
 
         for (MasterParamsFloat masterParamFloat : this->paramsContainer.masterParamsFloat)
         {
-            for (SensorParams sensorsParam : this->paramsContainer.sensorsParams)
+            for (SensorParams sensorParams : this->paramsContainer.sensorsParams)
             {
-                if (sensorsParam.mapIdxParam->get() == masterParamFloat.mapIdx)
+                if (sensorParams.mapIdxParam->get() == masterParamFloat.mapIdx)
                 {
                     float sensorValueNormalized = inverseLerp(
-                        sensorsParam.valueMinParam->get(),
-                        sensorsParam.valueMaxParam->get(),
-                        sensorsParam.sensorFunc(this->sensors));
+                        sensorParams.valueMinParam->get(),
+                        sensorParams.valueMaxParam->get(),
+                        sensorParams.sensorFunc(this->sensors));
 
                     outputLeft = masterParamFloat.floatFunc(
                         outputLeft,
