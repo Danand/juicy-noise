@@ -121,25 +121,13 @@ void JuicynoisefxAudioProcessor::changeProgramName(int index, const juce::String
 //==============================================================================
 void JuicynoisefxAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    this->sampleRate = static_cast<int>(floor(sampleRate));
     this->audioBufferSize = samplesPerBlock;
+
+    this->masterContext.sampleRate = static_cast<int>(floor(sampleRate));
 
     int latency = static_cast<int>(floor(samplesPerBlock / (sampleRate / 1000.0)));
 
     this->latency.store(latency);
-
-    if (this->lastBuffer != nullptr)
-    {
-        delete[] this->lastBuffer;
-        this->lastBuffer = nullptr;
-    }
-
-    this->lastBuffer = new float[samplesPerBlock];
-
-    std::fill(
-        this->lastBuffer,
-        this->lastBuffer + samplesPerBlock,
-        0.0f);
 }
 
 void JuicynoisefxAudioProcessor::releaseResources()
@@ -151,12 +139,6 @@ void JuicynoisefxAudioProcessor::releaseResources()
     if (this->portListener != nullptr)
     {
         delete this->portListener;
-    }
-
-    if (this->lastBuffer != nullptr)
-    {
-        delete[] this->lastBuffer;
-        this->lastBuffer = nullptr;
     }
 }
 
@@ -229,15 +211,24 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, 
     float* channelDataLeft = buffer.getWritePointer(0);
     float* channelDataRight = buffer.getWritePointer(1);
 
+    SampleBuffer sampleBuffer;
+
+    sampleBuffer.resize(numSamples);
+
+    SampleBuffers &lastBuffers = this->masterContext.lastBuffers;
+
+    float feedbackTime = this->paramsContainer.feedbackTimeParameter->get();
+
+    if (lastBuffers.size() > 2 + (feedbackTime * this->masterContext.sampleRate))
+    {
+        lastBuffers.erase(lastBuffers.begin());
+    }
+
+    lastBuffers.push_back(sampleBuffer);
+
     for (int sample = 0; sample < numSamples; ++sample)
     {
-        float time = this->samplesCountInSecond / static_cast<float>(this->sampleRate);
-
-        float inputLeft = channelDataLeft[sample];
-        float inputRight = channelDataRight[sample];
-
-        float outputLeft = inputLeft;
-        float outputRight = inputRight;
+        float time = this->samplesCountInSecond / static_cast<float>(this->masterContext.sampleRate);
 
         float synthOutputBlendedLeft = 0.0f;
         float synthOutputBlendedRight = 0.0f;
@@ -262,6 +253,11 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, 
                         sensorValueNormalizedMax = sensorValueNormalized;
                     }
                 }
+            }
+
+            if (sensorValueNormalizedMax <= 0.0f)
+            {
+                continue;
             }
 
             int freq = static_cast<int>(
@@ -317,42 +313,66 @@ void JuicynoisefxAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, 
                 synthOutputBlendedLeft = std::max(synthOutputBlendedLeft, synthOutputLeft);
                 synthOutputBlendedRight = std::max(synthOutputBlendedRight, synthOutputRight);
             }
-
         }
 
-        outputLeft = synthOutputBlendedLeft;
-        outputRight = synthOutputBlendedRight;
+        float inputLeft = channelDataLeft[sample];
+        float inputRight = channelDataRight[sample];
+
+        float blendRatio = this->paramsContainer.inputBlendParameter->get();
+
+        float outputLeft = synthOutputBlendedLeft + (inputLeft * blendRatio * synthOutputBlendedLeft);
+        float outputRight = synthOutputBlendedRight + (inputRight * blendRatio * synthOutputBlendedRight);
 
         for (MasterParamsFloat masterParamFloat : this->paramsContainer.masterParamsFloat)
         {
+            float sensorValueNormalizedMax = -1.0f;
+
             for (SensorParams sensorParams : this->paramsContainer.sensorsParams)
             {
                 if (sensorParams.mapIdxParam->get() == masterParamFloat.mapIdx)
                 {
+                    float sensorValueRaw = sensorParams.sensorFunc(this->sensors);
+
                     float sensorValueNormalized = inverseLerp(
                         sensorParams.valueMinParam->get(),
                         sensorParams.valueMaxParam->get(),
-                        sensorParams.sensorFunc(this->sensors));
+                        sensorValueRaw);
 
-                    outputLeft = masterParamFloat.floatFunc(
-                        outputLeft,
-                        masterParamFloat.valueParam->get() * sensorValueNormalized);
-
-                    outputRight = masterParamFloat.floatFunc(
-                        outputRight,
-                        masterParamFloat.valueParam->get() * sensorValueNormalized);
+                    if (sensorValueNormalized > sensorValueNormalizedMax)
+                    {
+                        sensorValueNormalizedMax = sensorValueNormalized;
+                    }
                 }
             }
+
+            if (sensorValueNormalizedMax <= 0.0f)
+            {
+                continue;
+            }
+
+            outputLeft = masterParamFloat.floatFunc(
+                outputLeft,
+                masterParamFloat.valueParam->get(),
+                sensorValueNormalizedMax,
+                this->masterContext);
+
+            outputRight = masterParamFloat.floatFunc(
+                outputRight,
+                masterParamFloat.valueParam->get(),
+                sensorValueNormalizedMax,
+                this->masterContext);
         }
 
         channelDataLeft[sample] = outputLeft;
         channelDataRight[sample] = outputRight;
 
-        this->lastBuffer[sample] = outputLeft;
+        SampleBuffer &lastBuffer = lastBuffers.back();
+
+        lastBuffer[sample] = (outputLeft + outputRight) / 2.0f;
 
         this->samplesCountInSecond++;
 
-        if (this->samplesCountInSecond > this->sampleRate)
+        if (this->samplesCountInSecond > this->masterContext.sampleRate)
         {
             this->samplesCountInSecond = 0;
         }

@@ -11,6 +11,11 @@ float magnitudeSynth(float x, float y, float z)
         (z * z));
 }
 
+float lerpSynth(float from, float to, float ratio)
+{
+    return std::abs((1.0f - ratio) * from + (to * ratio));
+}
+
 float sawtoothWave(float time, int frequency, float amplitude, float phaseShift)
 {
     float period = 1.0f / frequency;

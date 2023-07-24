@@ -1,10 +1,23 @@
 #pragma once
 
+#include <vector>
+
 #include <JuceHeader.h>
 
 #include "../Sensors/Sensors.h"
 
-typedef float (*FloatFunc)(float input, float modifier);
+using SampleBuffer = std::vector<float>;
+using SampleBuffers = std::vector<SampleBuffer>;
+
+struct MasterContext
+{
+    float feedbackTime;
+    float feedbackTimeRemaining;
+    int sampleRate;
+    SampleBuffers lastBuffers;
+};
+
+typedef float (*FloatFunc)(float input, float paramValue, float sensorValueNormalized, MasterContext &masterContext);
 typedef float (*SynthFunc)(float time, int frequency, float amplitude, float phaseShift);
 typedef float (*SensorFunc)(const Sensors &sensors);
 

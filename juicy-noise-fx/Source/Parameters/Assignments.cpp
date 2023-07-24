@@ -20,6 +20,24 @@ juce::AudioParameterInt* Assignments::addParamInt(
     return parameter;
 }
 
+juce::AudioParameterFloat* Assignments::addParamFloat(
+    juce::AudioProcessor* processor,
+    std::string name,
+    float min,
+    float max)
+{
+    juce::AudioParameterFloat* parameter = new juce::AudioParameterFloat(
+        name,
+        name,
+        min,
+        max,
+        min);
+
+    processor->addParameter(parameter);
+
+    return parameter;
+}
+
 SynthParamFreqTuple Assignments::addSynthParam(
     juce::AudioProcessor* processor,
     ParamsContainer &paramsContainer,
@@ -73,15 +91,17 @@ juce::AudioParameterFloat* Assignments::addMasterParamFloat(
     int mapIdx,
     FloatFunc floatFunc,
     int &paramsCount,
-    float defaultValue)
+    float defaultValue,
+    float minValue,
+    float maxValue)
 {
     auto fullName = name + "_" + std::to_string(mapIdx);
 
     auto* parameter = new juce::AudioParameterFloat(
         fullName,
         fullName,
-        0.0f,
-        1.0f,
+        minValue,
+        maxValue,
         defaultValue);
 
     processor->addParameter(parameter);
@@ -160,6 +180,100 @@ SensorParamTuple Assignments::addSensorParam(
     return sensorParamTuple;
 }
 
+float amplify(
+    float input,
+    float paramValue,
+    float sensorValueNormalized,
+    MasterContext &masterContext)
+{
+    return input * (1.0f + (paramValue * sensorValueNormalized));
+}
+
+float clip(
+    float input,
+    float paramValue,
+    float sensorValueNormalized,
+    MasterContext &masterContext)
+{
+    float delta = paramValue - input;
+
+    if (delta >= 0.0f)
+    {
+        return input;
+    }
+    else
+    {
+        return input - (delta * sensorValueNormalized);
+    }
+}
+
+float setFeedbackTime(
+    float input,
+    float paramValue,
+    float sensorValueNormalized,
+    MasterContext &masterContext)
+{
+    masterContext.feedbackTime = paramValue * sensorValueNormalized;
+    return input;
+}
+
+float getSampleAtTimeAgo(const MasterContext &masterContext, float timeAgo)
+{
+    float iteratedTime = 0.0f;
+
+    for (int bufferIdx = masterContext.lastBuffers.size() - 1; bufferIdx >= 0; --bufferIdx)
+    {
+        SampleBuffer buffer = masterContext.lastBuffers[bufferIdx];
+
+        int bufferSize = buffer.size();
+
+        for (int sampleIdx = 0; sampleIdx < bufferSize; ++sampleIdx)
+        {
+            iteratedTime += 1.0f / (masterContext.sampleRate / static_cast<float>(bufferSize));
+
+            if (iteratedTime >= timeAgo)
+            {
+                return buffer[sampleIdx];
+            }
+        }
+    }
+
+    return 0;
+}
+
+float feedback(
+    float input,
+    float paramValue,
+    float sensorValueNormalized,
+    MasterContext &masterContext)
+{
+    if (masterContext.feedbackTime < 0.001f)
+    {
+        return input;
+    }
+
+    if (masterContext.feedbackTimeRemaining < 0.001f)
+    {
+        masterContext.feedbackTimeRemaining = masterContext.feedbackTime;
+    }
+
+    float progress = 1.0f - (masterContext.feedbackTimeRemaining / masterContext.feedbackTime);
+
+    float mix = paramValue * sensorValueNormalized;
+
+    float feedbackRatio = lerpSynth(0, mix, progress);
+
+    float bufferedValue = getSampleAtTimeAgo(
+        masterContext,
+        masterContext.feedbackTime * progress);
+
+    int bufferSize = masterContext.lastBuffers.back().size();
+
+    masterContext.feedbackTimeRemaining -= 1.0f / (masterContext.sampleRate / static_cast<float>(bufferSize));
+
+    return input + (bufferedValue * feedbackRatio);
+}
+
 void Assignments::addSoundParameters(
     juce::AudioProcessor* processor,
     ParamsContainer &paramsContainer)
@@ -172,6 +286,12 @@ void Assignments::addSoundParameters(
         0,
         1000);
 
+    paramsContainer.inputBlendParameter = addParamFloat(
+        processor,
+        "ipt_bln",
+        0.0f,
+        1.0f);
+
     // Parameters are mapped to sensors:
 
     int paramsCount = 0;
@@ -181,7 +301,7 @@ void Assignments::addSoundParameters(
         paramsContainer,
         "amp",
         0,
-        [] (float input, float modifier) { return input + modifier; },
+        amplify,
         paramsCount);
 
     paramsContainer.clipParameter = addMasterParamFloat(
@@ -189,7 +309,7 @@ void Assignments::addSoundParameters(
         paramsContainer,
         "clp",
         1,
-        [] (float input, float modifier) { return std::min(input, modifier); },
+        clip,
         paramsCount,
         1.0f);
 
@@ -198,16 +318,19 @@ void Assignments::addSoundParameters(
         paramsContainer,
         "fdb_time",
         2,
-        [] (float input, float modifier) { return input; },
-        paramsCount); // TODO: Figure out how to implement.
+        setFeedbackTime,
+        paramsCount,
+        0.0f,
+        0.0f,
+        60.0f);
 
     paramsContainer.feedbackMixParameter = addMasterParamFloat(
         processor,
         paramsContainer,
         "fdb_mix",
         3,
-        [] (float input, float modifier) { return input; },
-        paramsCount); // TODO: Figure out how to implement.
+        feedback,
+        paramsCount);
 
     paramsCount = 0;
 

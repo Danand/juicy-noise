@@ -16,6 +16,12 @@ private:
         int min,
         int max);
 
+    static juce::AudioParameterFloat* addParamFloat(
+        juce::AudioProcessor* processor,
+        std::string name,
+        float min,
+        float max);
+
     static SynthParamFreqTuple addSynthParam(
         juce::AudioProcessor* processor,
         ParamsContainer &paramsContainer,
@@ -31,7 +37,9 @@ private:
         int mapIdx,
         FloatFunc floatFunc,
         int &paramsCount,
-        float defaultValue = 0.0f);
+        float defaultValue = 0.0f,
+        float minValue = 0.0f,
+        float maxValue = 1.0f);
 
     static SensorParamTuple addSensorParam(
         juce::AudioProcessor* processor,

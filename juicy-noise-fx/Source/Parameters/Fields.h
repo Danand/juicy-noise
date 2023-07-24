@@ -5,6 +5,8 @@
 #define JN_PARAMETERS \
 juce::AudioParameterInt* stereoPhaseParameter; \
  \
+juce::AudioParameterFloat* inputBlendParameter; \
+ \
 juce::AudioParameterFloat* amplifyParameter; \
 juce::AudioParameterFloat* clipParameter; \
  \

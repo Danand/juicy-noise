@@ -35,7 +35,7 @@ public:
     JuicynoisefxAudioProcessor();
     ~JuicynoisefxAudioProcessor() override;
 
-    //==============================================================================
+    //===============================S===============================================
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
@@ -77,9 +77,8 @@ private:
     std::queue<Sensors> sensorsQueue;
     Sensors sensors;
     int samplesCountInSecond = 0;
-    float* lastBuffer = nullptr;
+    MasterContext masterContext;
     std::atomic<int> latency;
-    int sampleRate;
     int audioBufferSize;
 
     //==============================================================================
