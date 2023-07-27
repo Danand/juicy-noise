@@ -95,5 +95,10 @@
     "*.mm": "cpp",
     "queue": "cpp"
   },
-  "C_Cpp.default.compilerPath": "/bin/g++-11"
+  "C_Cpp.default.compilerPath": "/bin/g++-11",
+  "xml.format.preserveAttributeLineBreaks": false,
+  "xml.format.preservedNewlines": 1,
+  "xml.format.maxLineWidth": 0,
+  "xml.format.splitAttributes": true,
+  "xml.format.enforceQuoteStyle": "preferred"
 }
