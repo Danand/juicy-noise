@@ -15,7 +15,11 @@
       "group": "build",
       "options": {
         "cwd": "${workspaceFolder}/Builds/LinuxMakefile",
-      }
+      },
+      "dependsOn": [
+        "mkdir-builds",
+        "launch-projucer-resave",
+      ],
     },
     {
       "label": "clean-vst3-all",
@@ -34,6 +38,9 @@
         "cwd": "${workspaceFolder}/Builds/LinuxMakefile",
       },
       "hide": true,
+      "dependsOn": [
+        "mkdir-builds",
+      ],
     },
     {
       "label": "clean-vst3-impl",
@@ -47,6 +54,41 @@
       "options": {
         "cwd": "${workspaceFolder}/Builds/LinuxMakefile",
       },
+      "hide": true,
+      "dependsOn": [
+        "mkdir-builds",
+      ],
+    },
+    {
+      "label": "mkdir-builds",
+      "detail": "Create directory Builds",
+      "type": "shell",
+      "command": "mkdir",
+      "args": [
+        "-p",
+        "Builds/LinuxMakefile",
+      ],
+      "presentation": {
+        "reveal": "silent",
+      },
+      "group": "none",
+      "hide": true,
+    },
+    {
+      "label": "launch-projucer-resave",
+      "detail": "Launch Projucer resave",
+      "type": "shell",
+      "command": "chmod +x ./Projucer && ./Projucer --resave '${workspaceFolder}/juicy-noise-fx.jucer'",
+      "presentation": {
+        "reveal": "silent",
+      },
+      "group": "none",
+      "options": {
+        "cwd": "${workspaceFolder}/../JUCE/extras/Projucer/Builds/LinuxMakefile/build",
+      },
+      "dependsOn": [
+        "build-projucer",
+      ],
       "hide": true,
     },
     {
