@@ -1,9 +1,6 @@
 #include <iostream>
 #include <string>
-#include <sys/socket.h>
-#include <arpa/inet.h>
 #include <string.h>
-#include <unistd.h>
 #include <queue>
 #include <thread>
 #include <chrono>
@@ -11,6 +8,19 @@
 #include <atomic>
 
 #include "SensorsServer.h"
+
+#ifdef _WIN32
+    #include <winsock2.h>
+    #include <WS2tcpip.h>
+
+    #define close_socket(fd) closesocket(fd)
+#else
+    #include <arpa/inet.h>
+    #include <sys/socket.h>
+    #include <unistd.h>
+
+    #define close_socket(fd) close(fd)
+#endif
 
 SocketDescriptor openServerSocketDescriptor(const SocketPort &port, sockaddr_in &address)
 {
@@ -201,8 +211,8 @@ void SensorsServer::run()
 
 void SensorsServer::stop()
 {
-    close(this->clientSocketDescriptor);
-    close(this->serverSocketDescriptor);
+    close_socket(this->clientSocketDescriptor);
+    close_socket(this->serverSocketDescriptor);
 
     this->clientSocketDescriptor = EMPTY_SOCKET_DESCRIPTOR;
     this->serverSocketDescriptor = EMPTY_SOCKET_DESCRIPTOR;

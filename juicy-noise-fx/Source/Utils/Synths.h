@@ -2,6 +2,10 @@
 
 #include <cmath>
 
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
+#endif
+
 // TODO: Remove duplicate between this file and `Math.h`:
 float magnitudeSynth(float x, float y, float z)
 {
