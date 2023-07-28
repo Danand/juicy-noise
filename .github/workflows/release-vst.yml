@@ -11,6 +11,7 @@ jobs:
       matrix:
         os: [
           ubuntu-latest,
+          windows-latest
         ]
 
     runs-on: ${{ matrix.os }}
@@ -23,6 +24,7 @@ jobs:
 
       - name: Build for Linux
         if: matrix.os == 'ubuntu-latest'
+        shell: bash
         run: |
           sudo apt update
           sudo apt install \
@@ -47,7 +49,9 @@ jobs:
           make
           pushd "build"
           chmod +x ./Projucer
-          ./Projucer --resave "${project_path}"
+          ./Projucer \
+            --resave "${project_path}" \
+            --lf
           popd
           popd
           make_dir="juicy-noise-fx/Builds/LinuxMakefile"
@@ -55,7 +59,41 @@ jobs:
           pushd "${make_dir}"
           make VST3
 
-      - name: Pack artifacts
+      - name: Build for Windows
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy `
+            Bypass `
+            -Scope Process `
+            -Force; `
+          iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+          $env:Path += ";%USERPROFILE%\chocolatey\bin"
+          choco install --yes zip
+          choco install --yes visualstudio2019-workload-vctools
+          choco install --yes microsoft-build-tools
+          $project_path = "$((Get-Location).Path)\juicy-noise-fx\juicy-noise-fx.jucer"
+          pushd "JUCE\extras\Projucer\Builds\VisualStudio2019"
+          $msbuild = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+          & $msbuild Projucer.sln
+          $projucer = "$((Get-Location).Path)\x64\Debug\App\Projucer.exe"
+          $job = Start-Job -ScriptBlock { `
+            param($executable, $project) `
+            & $executable "--resave", "${project}" `
+          } `
+            -ArgumentList `
+              "${projucer}", `
+              "${project_path}"
+          Start-Sleep -Seconds 20
+          Receive-Job -Job $job
+          Remove-Job -Job $job
+          popd
+          pushd "juicy-noise-fx\Builds\VisualStudio2019"
+          & $msbuild juicy-noise-fx.sln
+
+      - name: Pack artifacts for Linux
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
         run: |
           vst_name="juicy-noise-fx.vst3"
           find . -type d -name "${vst_name}" \
@@ -73,9 +111,53 @@ jobs:
               done
             done
 
+      - name: Pack artifacts for Windows
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          vst_name="juicy-noise-fx.vst3"
+          find . -type f -name "${vst_name}" \
+          | while read -r vst_file; do
+              cp "${vst_file}" "${vst_name}"
+              arch="$(basename "$(realpath "$(dirname "${vst_file}")/../..")")"
+              archive_name="juicy-noise-fx-${{github.ref_name}}-${arch}-windows"
+              zip "${archive_name}.zip" "${vst_name}"
+            done
+
+      - name: Upload artifacts for Linux
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: vst-linux
+          path: juicy-noise-fx-*.zip
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload artifacts for Windows
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: vst-windows
+          path: juicy-noise-fx-*.zip
+          if-no-files-found: error
+          retention-days: 1
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+
+      - name: List artifacts
+        run: |
+          echo "Artifacts:"
+          ls -R
+
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           token: '${{ secrets._GITHUB_PAT }}'
-          files: 'juicy-noise-fx-*.zip'
+          files: './**/juicy-noise-fx-*.zip'
