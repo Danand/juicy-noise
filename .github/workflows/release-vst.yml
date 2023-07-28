@@ -62,7 +62,7 @@ jobs:
           | while read -r vst_dir; do
               for platform_dir in "${vst_dir}/Contents/"*; do
                 platform="$(basename "${platform_dir}")"
-                archive_name="juicy-noise-fx-${platform}"
+                archive_name="juicy-noise-fx-${{github.ref_name}}-${platform}"
                 mkdir "${archive_name}"
                 cp -r "${vst_dir}" "${archive_name}/${vst_name}"
                 pushd "${archive_name}"
@@ -77,5 +77,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          token: ${{ secrets._GITHUB_PAT }}
-          files: juicy-noise-fx-*.zip
+          token: '${{ secrets._GITHUB_PAT }}'
+          files: 'juicy-noise-fx-*.zip'
