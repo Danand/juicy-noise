@@ -1,12 +1,17 @@
 {
   "files.watcherExclude": {
     "JUCE/**": true,
+    "juicy-noise-android/**": true,
+    "juicy-noise-fx/**": true
   },
   "search.exclude": {
     "JUCE": true,
+    "juicy-noise-android/**": true,
+    "juicy-noise-fx/**": true
   },
   "files.exclude": {
     "JUCE": true,
-  },
-  "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
+    "juicy-noise-android/**": true,
+    "juicy-noise-fx/**": true
+  }
 }
