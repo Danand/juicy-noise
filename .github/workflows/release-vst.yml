@@ -22,42 +22,35 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Login ghcr.io
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          docker login \
+          --username ${{ github.repository_owner }} \
+          --password ${{ secrets._GITHUB_PAT }} \
+          ghcr.io
+
       - name: Build for Linux
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
-          sudo apt update
-          sudo apt install \
-            libasound2-dev \
-            libjack-jackd2-dev \
-            ladspa-sdk \
-            libcurl4-openssl-dev  \
-            libfreetype6-dev \
-            libx11-dev \
-            libxcomposite-dev \
-            libxcursor-dev \
-            libxcursor-dev \
-            libxext-dev \
-            libxinerama-dev \
-            libxrandr-dev \
-            libxrender-dev \
-            libwebkit2gtk-4.0-dev \
-            libglu1-mesa-dev \
-            mesa-common-dev
-          project_path="${PWD}/juicy-noise-fx/juicy-noise-fx.jucer"
-          pushd "JUCE/extras/Projucer/Builds/LinuxMakefile"
-          make
-          pushd "build"
-          chmod +x ./Projucer
-          ./Projucer \
-            --resave "${project_path}" \
-            --lf
-          popd
-          popd
-          make_dir="juicy-noise-fx/Builds/LinuxMakefile"
-          mkdir -p "${make_dir}"
-          pushd "${make_dir}"
-          make VST3
+          project_root="juicy-noise-fx"
+          jucer_project="juicy-noise-fx.jucer"
+          juce_repo="JUCE"
+          outputs_dir="${project_root}/Builds/LinuxMakefile/build"
+          cwd="$(pwd)"
+
+          mkdir -p "${outputs_dir}"
+
+          docker run \
+            --rm \
+            --user "$(id -u):$(id -g)" \
+            --mount "type=bind,source=${cwd}/${project_root},target=/project-root" \
+            --mount "type=bind,source=${cwd}/${juce_repo},target=/JUCE" \
+            --mount "type=bind,source=${cwd}/${outputs_dir},target=/outputs" \
+            --env "JUCER_PROJECT=${jucer_project}" \
+            ghcr.io/danand/docker-juce-build-linux/juce-build-linux:0.1.1
 
       - name: Build for Windows
         if: matrix.os == 'windows-latest'
@@ -68,15 +61,23 @@ jobs:
             -Scope Process `
             -Force; `
           iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
           $env:Path += ";%USERPROFILE%\chocolatey\bin"
+
           choco install --yes zip
           choco install --yes visualstudio2019-workload-vctools
           choco install --yes microsoft-build-tools
+
           $project_path = "$((Get-Location).Path)\juicy-noise-fx\juicy-noise-fx.jucer"
+
           pushd "JUCE\extras\Projucer\Builds\VisualStudio2019"
+
           $msbuild = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+
           & $msbuild Projucer.sln
+
           $projucer = "$((Get-Location).Path)\x64\Debug\App\Projucer.exe"
+
           $job = Start-Job -ScriptBlock { `
             param($executable, $project) `
             & $executable "--resave", "${project}" `
@@ -84,31 +85,34 @@ jobs:
             -ArgumentList `
               "${projucer}", `
               "${project_path}"
+
           Start-Sleep -Seconds 20
           Receive-Job -Job $job
           Remove-Job -Job $job
+
           popd
           pushd "juicy-noise-fx\Builds\VisualStudio2019"
+
           & $msbuild juicy-noise-fx.sln
 
       - name: Pack artifacts for Linux
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
-          vst_name="juicy-noise-fx.vst3"
-          find . -type d -name "${vst_name}" \
-          | while read -r vst_dir; do
-              for platform_dir in "${vst_dir}/Contents/"*; do
-                platform="$(basename "${platform_dir}")"
-                archive_name="juicy-noise-fx-${{github.ref_name}}-${platform}"
-                mkdir "${archive_name}"
-                cp -r "${vst_dir}" "${archive_name}/${vst_name}"
-                pushd "${archive_name}"
-                zip -r "${archive_name}.zip" "${vst_name}/"
-                popd
-                cp "${archive_name}/${archive_name}.zip" "${archive_name}.zip"
-                rm -rf "${archive_name}"
-              done
+          find . -name "juicy-noise-fx.so" \
+          | while read -r so_file; do
+            platform="$(basename "$(dirname "${so_file}")")"
+
+            archive_name="juicy-noise-fx-${{github.ref_name}}-${platform}"
+            archive_dir="${archive_name}/juicy-noise-fx.vst3/Contents/${platform}"
+
+            mkdir -p "${archive_dir}"
+
+            cp "${so_file}" "${archive_dir}/"
+
+            zip -r "${archive_name}.zip" "${archive_dir}/"
+
+            rm -rf "${archive_dir}"
             done
 
       - name: Pack artifacts for Windows
@@ -116,11 +120,14 @@ jobs:
         shell: bash
         run: |
           vst_name="juicy-noise-fx.vst3"
+
           find . -type f -name "${vst_name}" \
           | while read -r vst_file; do
               cp "${vst_file}" "${vst_name}"
+
               arch="$(basename "$(realpath "$(dirname "${vst_file}")/../..")")"
               archive_name="juicy-noise-fx-${{github.ref_name}}-${arch}-windows"
+
               zip "${archive_name}.zip" "${vst_name}"
             done
 
