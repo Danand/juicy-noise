@@ -16,20 +16,48 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    env:
+      BUILDER_IMAGE_UBUNTU: ghcr.io/danand/docker-juce-build-linux/juce-build-linux:0.1.1
+      BUILDER_IMAGE_FILE_UBUNTU: juce-build-linux.tar
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           submodules: recursive
 
-      - name: Login ghcr.io
+      - name: Restore builder image cache for Linux
         if: matrix.os == 'ubuntu-latest'
+        id: cache-builder-image-ubuntu
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.BUILDER_IMAGE_FILE_UBUNTU }}
+          key: ${{ env.BUILDER_IMAGE_UBUNTU }}
+
+      - name: Pull builder image for Linux
+        if: |
+          matrix.os == 'ubuntu-latest' &&
+          steps.cache-builder-image-ubuntu.outputs.cache-hit != 'true'
         shell: bash
         run: |
           docker login \
-          --username ${{ github.repository_owner }} \
-          --password ${{ secrets._GITHUB_PAT }} \
-          ghcr.io
+            --username ${{ github.repository_owner }} \
+            --password ${{ secrets._GITHUB_PAT }} \
+            ghcr.io
+
+          docker pull ${{ env.BUILDER_IMAGE_UBUNTU }}
+
+          docker save \
+            -o ${{ env.BUILDER_IMAGE_FILE_UBUNTU }} \
+            ${{ env.BUILDER_IMAGE_UBUNTU }}
+
+      - name: Load builder image cache for Linux
+        if: |
+          matrix.os == 'ubuntu-latest' &&
+          steps.cache-builder-image-ubuntu.outputs.cache-hit == 'true'
+        shell: bash
+        run: |
+          docker load -i ${{ env.BUILDER_IMAGE_FILE_UBUNTU }}
 
       - name: Build for Linux
         if: matrix.os == 'ubuntu-latest'
@@ -50,7 +78,7 @@ jobs:
             --mount "type=bind,source=${cwd}/${juce_repo},target=/JUCE" \
             --mount "type=bind,source=${cwd}/${outputs_dir},target=/outputs" \
             --env "JUCER_PROJECT=${jucer_project}" \
-            ghcr.io/danand/docker-juce-build-linux/juce-build-linux:0.1.1
+            ${{ env.BUILDER_IMAGE_UBUNTU }}
 
       - name: Build for Windows
         if: matrix.os == 'windows-latest'
