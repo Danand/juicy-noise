@@ -59,6 +59,13 @@ jobs:
         run: |
           docker load -i ${{ env.BUILDER_IMAGE_FILE_UBUNTU }}
 
+      - name: Restore Projucer cache
+        id: cache-projucer
+        uses: actions/cache@v3
+        with:
+          path: JUCE/extras/Projucer/Builds/${{ matrix.os == 'ubuntu-latest' && 'LinuxMakefile' || 'VisualStudio2019' }}/build
+          key: Projucer-${{ matrix.os }}-${{ hashFiles('JUCE/extras/Projucer/Source/**') }}
+
       - name: Build for Linux
         if: matrix.os == 'ubuntu-latest'
         shell: bash
