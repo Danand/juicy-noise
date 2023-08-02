@@ -7,6 +7,11 @@ on:
     branches:
       - 'main'
 
+
+env:
+  ANDROID_SDK_PATH: '/usr/local/lib/android/sdk'
+  ANDROID_SDK_VERSION: 34
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,7 +34,15 @@ jobs:
           wget \
           unzip
 
+    - name: Restore Android SDK cache
+      id: cache-android-sdk
+      uses: actions/cache@v3
+      with:
+        path: /usr/local/lib/android/sdk
+        key: android-sdk
+
     - name: Install Android SDK
+      if: steps.cache-android-sdk.outputs.cache-hit != 'true'
       run: |
         archive_name="tools.zip"
 
@@ -38,9 +51,8 @@ jobs:
           https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip \
           -O "${archive_name}"
 
-        android_lib="/usr/local/lib/android"
-        mkdir -p "${android_lib}"
-        sdk_path="${android_lib}/sdk"
+          sdk_path="${{ env.ANDROID_SDK_PATH }}"
+          mkdir -p "${sdk_path}"
 
         unzip \
           "${archive_name}" \
@@ -55,11 +67,14 @@ jobs:
         chmod +x "${sdk_manager}"
 
         echo "y" | "${sdk_manager}" --licenses
-        echo "y" | "${sdk_manager}" "platforms;android-34"
-        echo "y" | "${sdk_manager}" "build-tools;34.0.0"
+        echo "y" | "${sdk_manager}" "platforms;android-${{ env.ANDROID_SDK_VERSION }}"
+        echo "y" | "${sdk_manager}" "build-tools;${{ env.ANDROID_SDK_VERSION }}.0.0"
         echo "y" | "${sdk_manager}" "platform-tools"
 
-        export ANDROID_HOME="${sdk_path}"
+    - name: Set Android SDK to PATH
+      shell: bash
+      run: |
+        export ANDROID_HOME="${{ env.ANDROID_SDK_PATH }}"
 
     - name: Build Android client
       run: |
