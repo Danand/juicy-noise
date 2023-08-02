@@ -65,7 +65,7 @@ jobs:
         id: cache-projucer
         uses: actions/cache@v3
         with:
-          path: JUCE/extras/Projucer/Builds/${{ matrix.os == 'ubuntu-latest' && 'LinuxMakefile' || 'VisualStudio2019' }}/build
+          path: JUCE/extras/Projucer/Builds/${{ matrix.os == 'ubuntu-latest' && 'LinuxMakefile' || 'VisualStudio2019' }}/${{ matrix.os == 'ubuntu-latest' && 'build' || 'x64' }}/
           key: Projucer-${{ matrix.os }}-${{ hashFiles('JUCE/extras/Projucer/Source/**') }}
 
       - name: Restore JUCE modules cache
