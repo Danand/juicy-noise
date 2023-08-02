@@ -66,6 +66,14 @@ jobs:
           path: JUCE/extras/Projucer/Builds/${{ matrix.os == 'ubuntu-latest' && 'LinuxMakefile' || 'VisualStudio2019' }}/build
           key: Projucer-${{ matrix.os }}-${{ hashFiles('JUCE/extras/Projucer/Source/**') }}
 
+      - name: Restore JUCE modules cache
+        if: matrix.os == 'ubuntu-latest'
+        id: cache-juce-modules
+        uses: actions/cache@v3
+        with:
+          path: juicy-noise-fx/Builds/LinuxMakefile/build/intermediate/**/include_*
+          key: JUCE-modules-${{ matrix.os }}-${{ hashFiles('JUCE/modules/**') }}
+
       - name: Build for Linux
         if: matrix.os == 'ubuntu-latest'
         shell: bash
