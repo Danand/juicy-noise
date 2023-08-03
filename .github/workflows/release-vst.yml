@@ -76,6 +76,14 @@ jobs:
           path: juicy-noise-fx/Builds/LinuxMakefile/build/intermediate/**/include_*
           key: JUCE-modules-${{ matrix.os }}-${{ hashFiles('JUCE/modules/**') }}
 
+      - name: Log cached resourced
+        shell: bash
+        run: |
+          ls -Rla --time-style="full-iso" "JUCE/extras/Projucer/Source"
+          ls -Rla --time-style="full-iso" "JUCE/extras/Projucer/Builds"
+          ls -Rla --time-style="full-iso" "JUCE/modules/"
+          ls -Rla --time-style="full-iso" "juicy-noise-fx/Builds/LinuxMakefile/build/intermediate"
+
       - name: Build for Linux
         if: matrix.os == 'ubuntu-latest'
         shell: bash
