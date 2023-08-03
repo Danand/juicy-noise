@@ -22,6 +22,7 @@ jobs:
     env:
       BUILDER_IMAGE_UBUNTU: ghcr.io/danand/docker-juce-build-linux/juce-build-linux:0.1.1
       BUILDER_IMAGE_FILE_UBUNTU: juce-build-linux.tar
+      CHOCOLATEY_CACHE: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
 
     steps:
       - name: Checkout
@@ -118,6 +119,14 @@ jobs:
             --env "JUCER_PROJECT=${jucer_project}" \
             ${{ env.BUILDER_IMAGE_UBUNTU }}
 
+      - name: Restore Chocolatey cache
+        if: matrix.os == 'windows-latest'
+        id: cache-chocolatey
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.CHOCOLATEY_CACHE }}
+          key: ${{ hashFiles('packages.config') }}
+
       - name: Build for Windows
         if: matrix.os == 'windows-latest'
         shell: pwsh
@@ -130,9 +139,7 @@ jobs:
 
           $env:Path += ";%USERPROFILE%\chocolatey\bin"
 
-          choco install --yes zip
-          choco install --yes visualstudio2019-workload-vctools
-          choco install --yes microsoft-build-tools
+          choco install --yes packages.config
 
           $project_path = "$((Get-Location).Path)\juicy-noise-fx\juicy-noise-fx.jucer"
 
