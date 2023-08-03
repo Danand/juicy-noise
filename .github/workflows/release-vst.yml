@@ -80,8 +80,13 @@ jobs:
       - name: Touch restored cache
         shell: bash
         run: |
-          find "JUCE/extras/Projucer/Builds" -type f | while read -r file; do touch "${file}"; done
-          find "juicy-noise-fx/Builds" -type f | while read -r file; do touch "${file}"; done
+          if [ -d "JUCE/extras/Projucer/Builds" ]; then
+            find "JUCE/extras/Projucer/Builds" -type f | while read -r file; do touch "${file}"; done
+          fi
+
+          if [ -d "juicy-noise-fx/Builds" ]; then
+            find "juicy-noise-fx/Builds" -type f | while read -r file; do touch "${file}"; done
+          fi
 
       - name: Log restored cache and sources
         if: matrix.os == 'ubuntu-latest'
