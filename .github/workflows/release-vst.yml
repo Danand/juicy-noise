@@ -76,7 +76,13 @@ jobs:
           path: juicy-noise-fx/Builds/LinuxMakefile/build/intermediate/**/include_*
           key: JUCE-modules-${{ matrix.os }}-${{ hashFiles('JUCE/modules/**') }}
 
-      - name: Log cached resourced
+      - name: Touch restored cache
+        shell: bash
+        run: |
+          find "JUCE/extras/Projucer/Builds" -type f | while read -r file; do touch "${file}"; done
+          find "juicy-noise-fx/Builds" -type f | while read -r file; do touch "${file}"; done
+
+      - name: Log restored cache and sources
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
