@@ -76,6 +76,14 @@ jobs:
       run: |
         export ANDROID_HOME="${{ env.ANDROID_SDK_PATH }}"
 
+    - name: Restore Gradle cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
     - name: Build Android client
       run: |
         rev=${{ startsWith(github.ref, 'refs/tags/') &&  github.ref_name || github.sha }}
