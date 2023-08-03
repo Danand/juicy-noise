@@ -9,7 +9,7 @@ on:
 
 
 env:
-  ANDROID_SDK_PATH: '/usr/local/lib/android/sdk'
+  ANDROID_SDK_PATH: 'android-sdk'
   ANDROID_SDK_VERSION: 34
 
 jobs:
@@ -38,7 +38,7 @@ jobs:
       id: cache-android-sdk
       uses: actions/cache@v3
       with:
-        path: /usr/local/lib/android/sdk
+        path: ${{ env.ANDROID_SDK_PATH }}
         key: android-sdk
 
     - name: Install Android SDK
