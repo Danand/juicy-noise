@@ -143,6 +143,9 @@ jobs:
 
           choco install --yes packages.config
 
+          ls -Force "C:\ProgramData"
+          ls -Force "%USERPROFILE%"
+
           $project_path = "$((Get-Location).Path)\juicy-noise-fx\juicy-noise-fx.jucer"
 
           pushd "JUCE\extras\Projucer\Builds\VisualStudio2019"
