@@ -139,6 +139,8 @@ jobs:
 
           $env:Path += ";%USERPROFILE%\chocolatey\bin"
 
+          choco cache list
+
           choco install --yes packages.config
 
           $project_path = "$((Get-Location).Path)\juicy-noise-fx\juicy-noise-fx.jucer"
