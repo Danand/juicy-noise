@@ -130,7 +130,7 @@ jobs:
             ${{ env.CHOCOLATEY_APP_CACHE }}
             ${{ env.CHOCOLATEY_DATA_CACHE }}
             ${{ env.CHOCOLATEY_HTTP_CACHE }}
-          key: ${{ hashFiles('packages.config') }}
+          key: chocolatey-${{ hashFiles('packages.config') }}
 
       - name: Build for Windows
         if: matrix.os == 'windows-latest'
