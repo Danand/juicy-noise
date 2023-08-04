@@ -22,7 +22,9 @@ jobs:
     env:
       BUILDER_IMAGE_UBUNTU: ghcr.io/danand/docker-juce-build-linux/juce-build-linux:0.1.1
       BUILDER_IMAGE_FILE_UBUNTU: juce-build-linux.tar
-      CHOCOLATEY_CACHE: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
+      CHOCOLATEY_APP_CACHE: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
+      CHOCOLATEY_DATA_CACHE: C:\ProgramData\chocolatey
+      CHOCOLATEY_HTTP_CACHE: C:\ProgramData\ChocolateyHttpCache
 
     steps:
       - name: Checkout
@@ -124,7 +126,10 @@ jobs:
         id: cache-chocolatey
         uses: actions/cache@v3
         with:
-          path: ${{ env.CHOCOLATEY_CACHE }}
+          path: |
+            ${{ env.CHOCOLATEY_APP_CACHE }}
+            ${{ env.CHOCOLATEY_DATA_CACHE }}
+            ${{ env.CHOCOLATEY_HTTP_CACHE }}
           key: ${{ hashFiles('packages.config') }}
 
       - name: Build for Windows
@@ -144,7 +149,7 @@ jobs:
           choco install --yes packages.config
 
           ls -Force "C:\ProgramData"
-          ls -Force "%USERPROFILE%"
+          ls -Force "C:\Users\runneradmin"
 
           $project_path = "$((Get-Location).Path)\juicy-noise-fx\juicy-noise-fx.jucer"
 
