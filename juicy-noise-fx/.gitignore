@@ -1,3 +1,5 @@
 /Builds/
 /JuceLibraryCode/
 /Source/Generated/
+
+**/tmp-*.filtergraph

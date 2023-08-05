@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<PROPERTIES>
+  <VALUE
+      name="mainWindowPos"
+      val="0 57 1920 993 frame 30 0 0 0" />
+  <VALUE
+      name="pluginScanMode"
+      val="1" />
+  <VALUE name="pluginList">
+    <KNOWNPLUGINS />
+  </VALUE>
+  <VALUE
+      name="listWindowPos"
+      val="60 60 800 634 frame 0 0 0 0" />
+  <VALUE
+      name="lastPluginScanPath_VST3"
+      val="${FILTERGRAPH_PATH}" />
+  <VALUE name="audioDeviceState">
+    <DEVICESETUP
+        deviceType="ALSA"
+        audioOutputDeviceName="Playback/recording through the PulseAudio sound server"
+        audioInputDeviceName="Playback/recording through the PulseAudio sound server"
+        audioDeviceRate="44100.0"
+        audioDeviceBufferSize="256" />
+  </VALUE>
+  <VALUE
+      name="recentFilterGraphFiles"
+      val="${FILTERGRAPH_PATH}" />
+</PROPERTIES>

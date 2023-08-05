@@ -147,19 +147,23 @@
   </FILTER>
   <FILTER
       uid="5"
-      x="0.3427083333333333"
-      y="0.5073115860517435"
+      x="0.5"
+      y="0.5"
       useARA="0"
       uiLastX_Normal="80"
       uiLastY_Normal="180"
       uiopen_Normal="1">
+    <!--
+      Do not forget to place here variable names for substitution:
+      file="${workspaceFolder}/path/to.vst3"
+    -->
     <PLUGIN
         name="JuicyNoiseFX"
         format="VST3"
         category="Fx|Distortion|Network|NoOfflineProcess"
         manufacturer="Danand"
         version="0.1.6"
-        file="/home/user/juicy-noise/juicy-noise-fx/Builds/LinuxMakefile/build/juicy-noise-fx.vst3"
+        file="${PROJECT_DIR}/Builds/LinuxMakefile/build/juicy-noise-fx.vst3"
         uniqueId="93134a34"
         isInstrument="0"
         fileTime="1891fce7760"

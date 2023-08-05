@@ -144,7 +144,22 @@
       "dependsOn": [
         "build-vst3",
         "build-audio-plugin-host",
+        "prepare-filtergraph",
       ],
+    },
+    {
+      "label": "prepare-filtergraph",
+      "detail": "Substitutes variables for debugging with AudioPluginHost",
+      "type": "shell",
+      "command": "chmod +x ./scripts/filtergraph-substitute.sh && ./scripts/filtergraph-substitute.sh juicy-noise-fx.filtergraph juicy-noise-fx.plugin-host.settings",
+      "presentation": {
+        "reveal": "silent",
+      },
+      "group": "none",
+      "options": {
+        "cwd": "${workspaceFolder}",
+      },
+      "hide": true,
     },
     {
       "label": "build-audio-plugin-host",
