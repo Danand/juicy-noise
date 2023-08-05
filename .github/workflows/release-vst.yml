@@ -82,6 +82,22 @@ jobs:
           path: juicy-noise-fx/Builds/LinuxMakefile/build/intermediate/**/include_*
           key: JUCE-modules-${{ matrix.os }}-${{ hashFiles('JUCE/modules/**') }}
 
+      - name: Restore Projucer cache for Windows
+        if: matrix.os == 'windows-latest'
+        id: cache-projucer-windows
+        uses: actions/cache@v3
+        with:
+          path: JUCE\extras\Projucer\Builds\VisualStudio2019
+          key: Projucer-${{ matrix.os }}-${{ hashFiles('JUCE\extras\Projucer\Source\**') }}
+
+      - name: Restore JUCE modules cache for Windows
+        if: matrix.os == 'windows-latest'
+        id: cache-juce-modules-windows
+        uses: actions/cache@v3
+        with:
+          path: 'juicy-noise-fx\Builds\VisualStudio2019\build\**\Shared Code\include_*'
+          key: JUCE-modules-${{ matrix.os }}-${{ hashFiles('JUCE\modules\**') }}
+
       - name: Touch restored cache
         shell: bash
         run: |
@@ -92,15 +108,6 @@ jobs:
           if [ -d "juicy-noise-fx/Builds" ]; then
             find "juicy-noise-fx/Builds" -type f | while read -r file; do touch "${file}"; done
           fi
-
-      - name: Log restored cache and sources
-        if: matrix.os == 'ubuntu-latest'
-        shell: bash
-        run: |
-          ls -Rla --time-style="full-iso" "JUCE/extras/Projucer/Source"
-          ls -Rla --time-style="full-iso" "JUCE/extras/Projucer/Builds"
-          ls -Rla --time-style="full-iso" "JUCE/modules/"
-          ls -Rla --time-style="full-iso" "juicy-noise-fx/Builds/LinuxMakefile/build/intermediate"
 
       - name: Build for Linux
         if: matrix.os == 'ubuntu-latest'
@@ -136,22 +143,6 @@ jobs:
             ${{ env.CHOCOLATEY_HTTP_CACHE }}
             ${{ env.VS2019_CACHE }}
           key: chocolatey-${{ hashFiles('packages.config') }}
-
-      - name: Restore Projucer cache for Windows
-        if: matrix.os == 'windows-latest'
-        id: cache-projucer-windows
-        uses: actions/cache@v3
-        with:
-          path: JUCE\extras\Projucer\Builds\VisualStudio2019\x64
-          key: Projucer-${{ matrix.os }}-${{ hashFiles('JUCE/extras/Projucer/Source/**') }}
-
-      - name: Restore JUCE modules cache for Windows
-        if: matrix.os == 'windows-latest'
-        id: cache-juce-modules-windows
-        uses: actions/cache@v3
-        with:
-          path: 'juicy-noise-fx\Builds\VisualStudio2019\build\x64\Debug\Shared Code\include_*'
-          key: JUCE-modules-${{ matrix.os }}-${{ hashFiles('JUCE/modules/**') }}
 
       - name: Build for Windows
         if: matrix.os == 'windows-latest'
