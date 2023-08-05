@@ -134,9 +134,7 @@ jobs:
 
           pushd "JUCE\extras\Projucer\Builds\VisualStudio2019"
 
-          $msbuild = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
-
-          & $msbuild Projucer.sln
+          MSBuild.exe Projucer.sln
 
           $projucer = "$((Get-Location).Path)\x64\Debug\App\Projucer.exe"
 
@@ -155,7 +153,7 @@ jobs:
           popd
           pushd "juicy-noise-fx\Builds\VisualStudio2019"
 
-          & $msbuild juicy-noise-fx.sln
+          MSBuild.exe juicy-noise-fx.sln
 
       - name: Pack artifacts for Linux
         if: matrix.os == 'ubuntu-latest'
