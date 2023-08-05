@@ -148,7 +148,7 @@ jobs:
 
           choco cache list
 
-          choco install --yes packages.config
+          choco install --yes --force packages.config
 
           ls -Force "C:\ProgramData"
           ls -Force "C:\Users\runneradmin"
