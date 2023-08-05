@@ -95,7 +95,7 @@ jobs:
         id: cache-juce-modules-windows
         uses: actions/cache@v3
         with:
-          path: 'juicy-noise-fx\Builds\VisualStudio2019\build\**\Shared Code\include_*'
+          path: 'juicy-noise-fx\Builds\VisualStudio2019\**\Shared Code\include_*'
           key: JUCE-modules-${{ matrix.os }}-${{ hashFiles('JUCE\modules\**') }}
 
       - name: Touch restored cache
