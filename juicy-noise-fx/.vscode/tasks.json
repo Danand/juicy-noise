@@ -142,6 +142,7 @@
         },
       },
       "dependsOn": [
+        "build-vst3",
         "build-audio-plugin-host",
       ],
     },
