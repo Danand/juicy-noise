@@ -9,7 +9,7 @@
     displaySplashScreen="1"
     jucerFormatVersion="1"
     projectLineFeed="&#10;"
-    version="0.0.1"
+    version="0.1.6"
     companyName="Danand"
     companyWebsite="https://github.com/Danand/"
     pluginFormats="buildVST3"
