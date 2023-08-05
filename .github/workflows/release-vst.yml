@@ -196,7 +196,7 @@ jobs:
               arch="$(basename "$(realpath "$(dirname "${vst_file}")/../..")")"
               archive_name="juicy-noise-fx-${rev}-${arch}-windows"
 
-              zip "${archive_name}.zip" "${vst_name}"
+              7z a "${archive_name}.zip" "${vst_name}"
             done
 
       - name: Upload artifacts for Linux
