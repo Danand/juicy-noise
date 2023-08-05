@@ -126,6 +126,9 @@ jobs:
             --env "JUCER_PROJECT=${jucer_project}" \
             ${{ env.BUILDER_IMAGE_UBUNTU }}
 
+      - name: Find MSBuild
+        uses: microsoft/setup-msbuild@v1.1
+
       - name: Build for Windows
         if: matrix.os == 'windows-2019'
         shell: pwsh
@@ -134,7 +137,7 @@ jobs:
 
           pushd "JUCE\extras\Projucer\Builds\VisualStudio2019"
 
-          MSBuild.exe Projucer.sln
+          msbuild Projucer.sln
 
           $projucer = "$((Get-Location).Path)\x64\Debug\App\Projucer.exe"
 
@@ -153,7 +156,7 @@ jobs:
           popd
           pushd "juicy-noise-fx\Builds\VisualStudio2019"
 
-          MSBuild.exe juicy-noise-fx.sln
+          msbuild juicy-noise-fx.sln
 
       - name: Pack artifacts for Linux
         if: matrix.os == 'ubuntu-latest'
