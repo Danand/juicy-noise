@@ -199,23 +199,13 @@ jobs:
               7z a "${archive_name}.zip" "${vst_name}"
             done
 
-      - name: Upload artifacts for Linux
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v3
-        with:
-          name: vst-linux
-          path: juicy-noise-fx-*.zip
-          if-no-files-found: error
-          retention-days: 1
-
-      - name: Upload artifacts for Windows
-        if: matrix.os == 'windows-2019'
+      - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: vst-windows
           path: juicy-noise-fx-*.zip
           if-no-files-found: error
-          retention-days: 1
+          retention-days: 2
 
   release:
     if: startsWith(github.ref, 'refs/tags/')

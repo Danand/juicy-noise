@@ -43,13 +43,12 @@ jobs:
           "juicy-noise-${rev}.apk"
 
     - name: Upload artifacts for Android
-      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
       uses: actions/upload-artifact@v3
       with:
         name: apk
         path: '*.apk'
         if-no-files-found: error
-        retention-days: 1
+        retention-days: 2
 
     - name: Release
       uses: softprops/action-gh-release@v1
