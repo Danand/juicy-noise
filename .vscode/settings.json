@@ -13,5 +13,9 @@
     "JUCE": true,
     "juicy-noise-android/**": true,
     "juicy-noise-fx/**": true
-  }
+  },
+  "cSpell.words": [
+    "Jetpack",
+    "JUCE"
+  ]
 }
