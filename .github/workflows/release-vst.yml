@@ -66,16 +66,17 @@ jobs:
         run: |
           docker load -i ${{ env.BUILDER_IMAGE_FILE_UBUNTU }}
 
-      - name: Restore Projucer cache
-        id: cache-projucer
+      - name: Restore Projucer cache for Linux
+        if: matrix.os == 'ubuntu-latest'
+        id: cache-projucer-ubuntu
         uses: actions/cache@v3
         with:
-          path: JUCE/extras/Projucer/Builds/${{ matrix.os == 'ubuntu-latest' && 'LinuxMakefile' || 'VisualStudio2019' }}/${{ matrix.os == 'ubuntu-latest' && 'build' || 'x64' }}/
+          path: JUCE/extras/Projucer/Builds/LinuxMakefile/build/
           key: Projucer-${{ matrix.os }}-${{ hashFiles('JUCE/extras/Projucer/Source/**') }}
 
-      - name: Restore JUCE modules cache
+      - name: Restore JUCE modules cache for Linux
         if: matrix.os == 'ubuntu-latest'
-        id: cache-juce-modules
+        id: cache-juce-modules-ubuntu
         uses: actions/cache@v3
         with:
           path: juicy-noise-fx/Builds/LinuxMakefile/build/intermediate/**/include_*
@@ -136,6 +137,22 @@ jobs:
             ${{ env.VS2019_CACHE }}
           key: chocolatey-${{ hashFiles('packages.config') }}
 
+      - name: Restore Projucer cache for Windows
+        if: matrix.os == 'windows-latest'
+        id: cache-projucer-windows
+        uses: actions/cache@v3
+        with:
+          path: JUCE\extras\Projucer\Builds\VisualStudio2019\x64
+          key: Projucer-${{ matrix.os }}-${{ hashFiles('JUCE/extras/Projucer/Source/**') }}
+
+      - name: Restore JUCE modules cache for Windows
+        if: matrix.os == 'windows-latest'
+        id: cache-juce-modules-windows
+        uses: actions/cache@v3
+        with:
+          path: 'juicy-noise-fx\Builds\VisualStudio2019\build\x64\Debug\Shared Code\include_*'
+          key: JUCE-modules-${{ matrix.os }}-${{ hashFiles('JUCE/modules/**') }}
+
       - name: Build for Windows
         if: matrix.os == 'windows-latest'
         shell: pwsh
@@ -146,14 +163,7 @@ jobs:
             -Force; `
           iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
-          $env:Path += ";%USERPROFILE%\chocolatey\bin"
-
-          choco cache list
-
           choco install --yes packages.config
-
-          ls -Force "C:\ProgramData"
-          ls -Force "C:\Users\runneradmin"
 
           $project_path = "$((Get-Location).Path)\juicy-noise-fx\juicy-noise-fx.jucer"
 
