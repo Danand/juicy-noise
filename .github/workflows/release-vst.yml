@@ -127,6 +127,7 @@ jobs:
             ${{ env.BUILDER_IMAGE_UBUNTU }}
 
       - name: Find MSBuild
+        if: matrix.os == 'windows-2019'
         uses: microsoft/setup-msbuild@v1.1
 
       - name: Build for Windows
