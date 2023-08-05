@@ -25,6 +25,7 @@ jobs:
       CHOCOLATEY_APP_CACHE: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
       CHOCOLATEY_DATA_CACHE: C:\ProgramData\chocolatey
       CHOCOLATEY_HTTP_CACHE: C:\ProgramData\ChocolateyHttpCache
+      VS2019_CACHE: 'C:\Program Files (x86)\Microsoft Visual Studio\2019'
 
     steps:
       - name: Checkout
@@ -132,6 +133,7 @@ jobs:
             ${{ env.CHOCOLATEY_APP_CACHE }}
             ${{ env.CHOCOLATEY_DATA_CACHE }}
             ${{ env.CHOCOLATEY_HTTP_CACHE }}
+            ${{ env.VS2019_CACHE }}
           key: chocolatey-${{ hashFiles('packages.config') }}
 
       - name: Build for Windows
@@ -148,7 +150,7 @@ jobs:
 
           choco cache list
 
-          choco install --yes --force packages.config
+          choco install --yes packages.config
 
           ls -Force "C:\ProgramData"
           ls -Force "C:\Users\runneradmin"
