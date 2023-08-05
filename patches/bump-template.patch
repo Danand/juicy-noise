@@ -1,0 +1,29 @@
+From 4feaf6d723e7760d584cf6957e4e7554fc3e7577 Mon Sep 17 00:00:00 2001
+From: Andrey Danilov <danand@inbox.ru>
+Date: Sat, 5 Aug 2023 16:09:31 +0300
+Subject: [PATCH] Bump version to `${VERSION_NEXT}`
+
+
+diff --git a/juicy-noise-android/app/build.gradle b/juicy-noise-android/app/build.gradle
+index 0518e81..73f0383 100644
+--- a/juicy-noise-android/app/build.gradle
++++ b/juicy-noise-android/app/build.gradle
+@@ -15,2 +15,2 @@ android {
+-        versionCode ${VERSION_CODE_LAST}
+-        versionName "${VERSION_LAST}"
++        versionCode ${VERSION_CODE_NEXT}
++        versionName "${VERSION_NEXT}"
+diff --git a/juicy-noise-fx/juicy-noise-fx.filtergraph b/juicy-noise-fx/juicy-noise-fx.filtergraph
+index 3305eab..2b34ef2 100644
+--- a/juicy-noise-fx/juicy-noise-fx.filtergraph
++++ b/juicy-noise-fx/juicy-noise-fx.filtergraph
+@@ -161 +161 @@
+-        version="${VERSION_LAST}"
++        version="${VERSION_NEXT}"
+diff --git a/juicy-noise-fx/juicy-noise-fx.jucer b/juicy-noise-fx/juicy-noise-fx.jucer
+index 957b70c..30ad0ea 100644
+--- a/juicy-noise-fx/juicy-noise-fx.jucer
++++ b/juicy-noise-fx/juicy-noise-fx.jucer
+@@ -12 +12 @@
+-    version="${VERSION_LAST}"
++    version="${VERSION_NEXT}"
