@@ -162,7 +162,7 @@
         format="VST3"
         category="Fx|Distortion|Network|NoOfflineProcess"
         manufacturer="Danand"
-        version="0.1.6"
+        version="0.1.7"
         file="${PROJECT_DIR}/Builds/LinuxMakefile/build/juicy-noise-fx.vst3"
         uniqueId="93134a34"
         isInstrument="0"
