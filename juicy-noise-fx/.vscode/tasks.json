@@ -196,7 +196,7 @@
       "label": "install-artifact-apk",
       "detail": "Install Android app from latest CI artifacts",
       "type": "shell",
-      "command": "./scripts/artifacts-install-vst.sh",
+      "command": "./scripts/artifacts-install-android.sh",
       "presentation": {
         "reveal": "always",
       },

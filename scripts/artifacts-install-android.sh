@@ -14,5 +14,5 @@ apk_file="$( \
     -name "*.apk" \
 )"
 
-adb shell pm uninstall "com.danand.juicynoise"
+adb shell pm uninstall "com.danand.juicynoise" > /dev/null 2>&1 || true
 adb install "${apk_file}"

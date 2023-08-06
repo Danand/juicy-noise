@@ -11,7 +11,8 @@ artifacts_dir="$(realpath "${script_dir}/../artifacts")"
 vst_file_zip="$( \
   find "${artifacts_dir}/vst" \
     -type f \
-    -name "*.zip" \
+    -name "*-linux.zip" \
+  | head -n 1 \
 )"
 
 extracted_dir="${artifacts_dir}/extracted"
@@ -34,5 +35,8 @@ rm -rf "${output_path}"
 
 mkdir -p "${build_dir}"
 
-cp -rf "${vst_dir}/juicy-noise-fx.vst3" ""${output_path}"
+cp -rf "${vst_dir}/juicy-noise-fx.vst3" "${output_path}"
 
+echo
+echo "Success: ${output_path} was copied into project outputs and ready to run"
+echo
