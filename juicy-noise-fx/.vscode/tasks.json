@@ -175,5 +175,53 @@
       },
       "hide": true,
     },
+    {
+      "label": "install-artifact-vst",
+      "detail": "Install VST plugin from latest CI artifacts",
+      "type": "shell",
+      "command": "./scripts/artifacts-install-vst.sh",
+      "presentation": {
+        "reveal": "always",
+      },
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/..",
+      },
+      "dependsOn": [
+        "download-artifacts",
+      ],
+      "hide": true,
+    },
+    {
+      "label": "install-artifact-apk",
+      "detail": "Install Android app from latest CI artifacts",
+      "type": "shell",
+      "command": "./scripts/artifacts-install-vst.sh",
+      "presentation": {
+        "reveal": "always",
+      },
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/..",
+      },
+      "dependsOn": [
+        "download-artifacts",
+      ],
+      "hide": true,
+    },
+    {
+      "label": "download-artifacts",
+      "detail": "Download latest CI artifacts",
+      "type": "shell",
+      "command": "./scripts/artifacts-download.sh",
+      "presentation": {
+        "reveal": "silent",
+      },
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/..",
+      },
+      "hide": true,
+    },
   ]
 }

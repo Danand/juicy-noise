@@ -202,7 +202,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: vst-windows
+          name: vst
           path: juicy-noise-fx-*.zip
           if-no-files-found: error
           retention-days: 2

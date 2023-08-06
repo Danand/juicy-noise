@@ -6,7 +6,7 @@ set -e
 
 script_dir="$(dirname "$(realpath "${BASH_SOURCE}")")"
 
-artifacts_dir="${script_dir}/../artifacts"
+artifacts_dir="$(realpath "${script_dir}/../artifacts")"
 
 rm -rf "${artifacts_dir}"
 

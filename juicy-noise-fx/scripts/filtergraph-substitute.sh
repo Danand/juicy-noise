@@ -3,6 +3,8 @@
 # Substitutes filtergraph preset file
 # into AudioPluginHost for seamless project debugging.
 
+set -e
+
 filtergraph_file="$1"
 plugin_host_settings_file_template="$2"
 

@@ -2,30 +2,37 @@
 #
 # Installs artifact fot VST host.
 
+set -e
+
 script_dir="$(dirname "$(realpath "${BASH_SOURCE}")")"
 
-artifacts_dir="${script_dir}/../artifacts"
+artifacts_dir="$(realpath "${script_dir}/../artifacts")"
 
 vst_file_zip="$( \
-  find "${artifacts_dir}/vst-linux" \
+  find "${artifacts_dir}/vst" \
     -type f \
     -name "*.zip" \
 )"
 
+extracted_dir="${artifacts_dir}/extracted"
+
 unzip \
   -o "${vst_file_zip}" \
-  -d "${artifacts_dir}/extracted" \
+  -d "${extracted_dir}" \
 
 vst_dir="$( \
-  find "${artifacts_dir}/extracted" \
+  find "${extracted_dir}" \
     -type d \
     -name "juicy-noise-fx-*" \
 )"
 
 build_dir="${script_dir}/../juicy-noise-fx/Builds/LinuxMakefile/build"
 
-rm -rf "${build_dir}/juicy-noise-fx.vst3"
+output_path="${build_dir}/juicy-noise-fx.vst3"
+
+rm -rf "${output_path}"
 
 mkdir -p "${build_dir}"
 
-cp -rf "${vst_dir}/juicy-noise-fx.vst3" "${build_dir}/juicy-noise-fx.vst3"
+cp -rf "${vst_dir}/juicy-noise-fx.vst3" ""${output_path}"
+
