@@ -29,6 +29,19 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Format ref
+        id: format-ref
+        shell: bash
+        run: |
+          sha_short="$(echo "${{ github.sha }}" | head -c 8)"
+          ref="${sha_short}"
+
+          if ${{ startsWith(github.ref, 'refs/tags/') }}; then
+            ref="${{ github.ref_name }}"
+          fi
+
+          echo "::set-output name=value::${ref}"
+
       - name: Restore builder image cache for Linux
         if: matrix.os == 'ubuntu-latest'
         id: cache-builder-image-ubuntu
@@ -163,40 +176,26 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
-          sha_short="$(echo "${{ github.sha }}" | head -c 8)"
-          rev="${sha_short}"
-
-          if ${{ startsWith(github.ref, 'refs/tags/') }}; then
-            rev="${{ github.ref_name }}"
-          fi
-
           find . -name "juicy-noise-fx.so" \
           | while read -r so_file; do
-            platform="$(basename "$(dirname "${so_file}")")"
+              platform="$(basename "$(dirname "${so_file}")")"
 
-            archive_name="juicy-noise-fx-${rev}-${platform}"
-            archive_dir="${archive_name}/juicy-noise-fx.vst3/Contents/${platform}"
+              archive_name="juicy-noise-fx-${{ steps.format-ref.outputs.value }}-${platform}"
+              archive_dir="${archive_name}/juicy-noise-fx.vst3/Contents/${platform}"
 
-            mkdir -p "${archive_dir}"
+              mkdir -p "${archive_dir}"
 
-            cp "${so_file}" "${archive_dir}/"
+              cp "${so_file}" "${archive_dir}/"
 
-            zip -r "${archive_name}.zip" "${archive_dir}/"
+              zip -r "${archive_name}.zip" "${archive_dir}/"
 
-            rm -rf "${archive_dir}"
+              rm -rf "${archive_dir}"
             done
 
       - name: Pack artifacts for Windows
         if: matrix.os == 'windows-2019'
         shell: bash
         run: |
-          sha_short="$(echo "${{ github.sha }}" | head -c 8)"
-          rev="${sha_short}"
-
-          if ${{ startsWith(github.ref, 'refs/tags/') }}; then
-            rev="${{ github.ref_name }}"
-          fi
-
           vst_name="juicy-noise-fx.vst3"
 
           find . -type f -name "${vst_name}" \
@@ -204,7 +203,7 @@ jobs:
               cp "${vst_file}" "${vst_name}"
 
               arch="$(basename "$(realpath "$(dirname "${vst_file}")/../..")")"
-              archive_name="juicy-noise-fx-${rev}-${arch}-windows"
+              archive_name="juicy-noise-fx-${{ steps.format-ref.outputs.value }}-${arch}-windows"
 
               7z a "${archive_name}.zip" "${vst_name}"
             done
