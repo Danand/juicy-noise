@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+# Installs artifact on Android device via ADB.
+
+script_dir="$(dirname "$(realpath "${BASH_SOURCE}")")"
+
+artifacts_dir="${script_dir}/../artifacts"
+
+apk_file="$( \
+  find "${artifacts_dir}/apk" \
+    -type f \
+    -name "*.apk" \
+)"
+
+adb shell pm uninstall "com.danand.juicynoise"
+adb install "${apk_file}"
