@@ -87,6 +87,8 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
     private lateinit var sensorManager: SensorManager
 
+    private var audioOutput: AudioOutput = AudioOutput()
+
     private var gyroscope: Sensor? = null
     private var accelerometer: Sensor? = null
     private var rotationVector: Sensor? = null
@@ -157,6 +159,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                     sampleRateState,
                     locationClient,
                     connectivityManager,
+                    audioOutput,
                 )
             }
         }
@@ -290,6 +293,7 @@ fun ColumnMain(
     sampleRateState: MutableState<Int>,
     locationClient: FusedLocationProviderClient,
     connectivityManager: ConnectivityManager,
+    audioOutput: AudioOutput,
 ) {
     LaunchedEffect(portState) {
         val subnet = findSubnet(connectivityManager)
@@ -377,6 +381,11 @@ fun ColumnMain(
             ButtonDisconnect(
                 isRunningState,
             )
+
+            ButtonStopDemo(
+                isRunningState,
+                audioOutput,
+            )
         } else {
             ButtonConnect(
                 ipState.value,
@@ -390,6 +399,15 @@ fun ColumnMain(
             ) {
                 checkIsValidIp(ipState.value)
             }
+
+            ButtonPlayDemo(
+                isRunningState,
+                sensorsState,
+                audioBufferSizeState,
+                sampleRateState,
+                locationClient,
+                audioOutput,
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -538,6 +556,44 @@ fun ButtonConnect(
 }
 
 @Composable
+fun ButtonPlayDemo(
+    isRunningState: MutableState<Boolean>,
+    sensorsState: MutableState<Sensors>,
+    audioBufferSizeState: MutableState<AudioBufferSize>,
+    sampleRateState: MutableState<Int>,
+    locationClient: FusedLocationProviderClient,
+    audioOutput: AudioOutput,
+) {
+    Button(
+        onClick = {
+            isRunningState.value = true
+
+            runReadingLocation(
+                locationClient,
+                isRunningState,
+                sensorsState,
+            )
+
+            audioOutput.play(
+                sampleRateState.value,
+                audioBufferSizeState.value.value,
+            )
+        },
+        colors = textButtonColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 0.dp,
+            pressedElevation = 16.dp,
+            disabledElevation = 0.dp,
+        ),
+        enabled = true
+    ) {
+        Text("Play demo")
+    }
+}
+
+@Composable
 fun ButtonDisconnect(
     isRunning: MutableState<Boolean>,
 ) {
@@ -555,6 +611,29 @@ fun ButtonDisconnect(
         ),
     ) {
         Text("Disconnect")
+    }
+}
+
+@Composable
+fun ButtonStopDemo(
+    isRunning: MutableState<Boolean>,
+    audioOutput: AudioOutput,
+) {
+    Button(
+        onClick = {
+            isRunning.value = false
+            audioOutput.stop()
+        },
+        colors = textButtonColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 0.dp,
+            pressedElevation = 16.dp,
+            disabledElevation = 0.dp,
+        ),
+    ) {
+        Text("Stop demo")
     }
 }
 
