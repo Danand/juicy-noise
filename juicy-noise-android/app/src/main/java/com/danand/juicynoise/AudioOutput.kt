@@ -1,10 +1,10 @@
 package com.danand.juicynoise
 
+import com.danand.juicynoise.interfaces.SignalProcessor
+
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
-
-import kotlin.random.Random
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +13,9 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-class AudioOutput {
+class AudioOutput(
+    private val signalProcessor: SignalProcessor,
+    ) {
     private lateinit var scope: CoroutineScope
 
     fun play(
@@ -43,9 +45,27 @@ class AudioOutput {
 
             audioTrack.play()
 
+            val floatArray = FloatArray(bufferSize)
+
+            val sampleTimeStep = 1.0f / samplingRate
+
+            val timeStart = System.currentTimeMillis() * 1000.0f
+
+            var timeCurrent = timeStart
+
             while (isActive) {
-                val floatArray = FloatArray(bufferSize) { Random.Default.nextFloat() }
+                val timeElapsedSeconds = timeCurrent - timeStart
+
+                for (i in floatArray.indices) {
+                    val sampleTime = timeElapsedSeconds + (i * sampleTimeStep)
+                    val value = signalProcessor.process(sampleTime)
+
+                    floatArray[i] = value
+                }
+
                 audioTrack.write(floatArray, 0, bufferSize, AudioTrack.WRITE_NON_BLOCKING)
+
+                timeCurrent += bufferSize * sampleTimeStep
             }
 
             audioTrack.stop()

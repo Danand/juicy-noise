@@ -58,6 +58,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.text.isDigitsOnly
+import com.danand.juicynoise.signalprocessors.SignalProcessorSensors
 import com.danand.juicynoise.ui.theme.JuicyNoiseTheme
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -86,8 +87,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private val sampleRateState = mutableStateOf(44100)
 
     private lateinit var sensorManager: SensorManager
-
-    private var audioOutput: AudioOutput = AudioOutput()
+    private lateinit var audioOutput: AudioOutput
 
     private var gyroscope: Sensor? = null
     private var accelerometer: Sensor? = null
@@ -146,6 +146,9 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         light = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
         pressure = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE)
         proximity = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
+
+        val signalProcessor = SignalProcessorSensors(sensorsState)
+        audioOutput = AudioOutput(signalProcessor)
 
         setContent {
             JuicyNoiseTheme {
