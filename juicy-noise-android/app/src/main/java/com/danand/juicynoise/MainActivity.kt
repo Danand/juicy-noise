@@ -158,10 +158,17 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         pressure = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE)
         proximity = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
 
-        val signalProcessor = SignalProcessorSensors(sensorsState)
-        val effect = EffectDelay(sensorsState)
+        val signalProcessorSensors = SignalProcessorSensors(sensorsState)
+        val effectDelay = EffectDelay(sensorsState)
 
-        audioOutput = AudioOutput(signalProcessor, effect)
+        audioOutput = AudioOutput(
+            arrayOf(
+                signalProcessorSensors,
+            ),
+            arrayOf(
+                effectDelay,
+            ),
+        )
 
         setContent {
             JuicyNoiseTheme {

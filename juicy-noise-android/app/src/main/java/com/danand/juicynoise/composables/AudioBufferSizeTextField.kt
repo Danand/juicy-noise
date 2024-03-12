@@ -1,6 +1,7 @@
 @file:OptIn(
     ExperimentalMaterial3Api::class,
     ExperimentalComposeUiApi::class,
+    ExperimentalMaterial3Api::class,
 )
 
 package com.danand.juicynoise.composables

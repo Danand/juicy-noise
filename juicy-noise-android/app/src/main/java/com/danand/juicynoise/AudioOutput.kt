@@ -7,6 +7,8 @@ import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
 
+import kotlin.math.max
+
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -15,8 +17,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class AudioOutput(
-    private val signalProcessor: SignalProcessor,
-    private val effect: Effect,
+    private val signalProcessors: Array<SignalProcessor>,
+    private val effects: Array<Effect>,
     ) {
     private lateinit var scope: CoroutineScope
 
@@ -58,15 +60,23 @@ class AudioOutput(
             while (isActive) {
                 val timeElapsedSeconds = timeCurrent - timeStart
 
+                var sampleMax = 0.0f
+
                 for (i in floatArray.indices) {
                     val sampleTime = timeElapsedSeconds + (i * sampleTimeStep)
-                    val value = signalProcessor.process(sampleTime)
 
-                    floatArray[i] = value
+                    for (signalProcessor in signalProcessors) {
+                        val sample = signalProcessor.process(sampleTime)
+                        sampleMax = max(sampleMax, sample)
+                    }
+
+                    floatArray[i] = sampleMax
                 }
 
                 // TODO: Uncomment when delay effect will be fixed.
-                //effect.process(floatArray, bufferSize)
+                //for (effect in effects) {
+                //    effect.process(floatArray, bufferSize)
+                //}
 
                 audioTrack.write(floatArray, 0, bufferSize, AudioTrack.WRITE_NON_BLOCKING)
 
