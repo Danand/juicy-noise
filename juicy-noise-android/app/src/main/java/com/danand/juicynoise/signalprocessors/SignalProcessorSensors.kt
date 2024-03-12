@@ -3,6 +3,7 @@ package com.danand.juicynoise.signalprocessors
 import androidx.compose.runtime.MutableState
 
 import com.danand.juicynoise.Sensors
+import com.danand.juicynoise.WeightedRandomChoice
 import com.danand.juicynoise.exoticWave
 import com.danand.juicynoise.interfaces.SignalProcessor
 import com.danand.juicynoise.magnitude
@@ -10,8 +11,8 @@ import com.danand.juicynoise.normalizeOnto
 import com.danand.juicynoise.sineWave
 import com.danand.juicynoise.squareWave
 import com.danand.juicynoise.sawtoothWave
-import kotlin.math.abs
 
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.random.Random
 
@@ -58,22 +59,38 @@ class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : 
         ::exoticWave,
     )
 
-    private var mapping: Array<Int> = Array(this.synths.count()) {
+    private val mapping: Array<Int> = Array(this.synths.count()) {
         Random.nextInt(0, this.sensorGetters.count())
     }
 
+    private val frequencyMaxToWeights = listOf(
+        700.0f to 0.6,
+        2500.0f to 0.3,
+        7000.0f to 0.1,
+    )
+
     override fun process(time: Float): Float {
-        val angularSpeedXMagnitude = magnitude(
+        val angularSpeedMagnitude = magnitude(
             this.sensorsState.value.angularSpeedX,
             this.sensorsState.value.angularSpeedY,
             this.sensorsState.value.angularSpeedZ,
         )
 
-        if (angularSpeedXMagnitude > 10) {
+        if (angularSpeedMagnitude > 10) {
             randomizeMapping(this.mapping) {
                 Random.nextInt(0, this.sensorGetters.count())
             }
         }
+
+        val accelerationMagnitude = magnitude(
+            this.sensorsState.value.accelerationX,
+            this.sensorsState.value.accelerationY,
+            this.sensorsState.value.accelerationZ,
+        )
+
+        var frequencyMax = 700.0f
+
+        val amplitudeMax = 0.9f
 
         var sampleValueTotal = 0.0f
 
@@ -83,18 +100,22 @@ class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : 
 
             val sensorValue = sensorGetter()
 
+            if (accelerationMagnitude > 40) {
+                frequencyMax = WeightedRandomChoice(frequencyMaxToWeights).next()
+            }
+
             val frequency = normalizeOnto(
                 sensorValue,
                 10.0f,
                 1000.0f,
                 40.0f,
-                700.0f,
+                frequencyMax,
             ).toInt()
 
             val sampleValueSynth = synth(
                 time,
                 frequency,
-                0.9f,
+                amplitudeMax,
                 0.0f,
             )
 
@@ -102,7 +123,7 @@ class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : 
         }
 
         if ((this.sensorsState.value.light % this.sensorsState.value.magneticZ).toInt() % 3 == 0) {
-            val sampleValueRandom = Random.nextFloat()
+            val sampleValueRandom = Random.nextFloat() * amplitudeMax
             sampleValueTotal = max(sampleValueTotal, sampleValueRandom)
         }
 

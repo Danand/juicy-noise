@@ -5,6 +5,7 @@ import com.danand.juicynoise.interfaces.SignalProcessor
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import com.danand.juicynoise.interfaces.Effect
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,6 +16,7 @@ import kotlinx.coroutines.launch
 
 class AudioOutput(
     private val signalProcessor: SignalProcessor,
+    private val effect: Effect,
     ) {
     private lateinit var scope: CoroutineScope
 
@@ -62,6 +64,9 @@ class AudioOutput(
 
                     floatArray[i] = value
                 }
+
+                // TODO: Uncomment when delay effect will be fixed.
+                //effect.process(floatArray, bufferSize)
 
                 audioTrack.write(floatArray, 0, bufferSize, AudioTrack.WRITE_NON_BLOCKING)
 

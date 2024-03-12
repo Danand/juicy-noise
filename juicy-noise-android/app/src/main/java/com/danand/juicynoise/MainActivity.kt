@@ -58,6 +58,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.text.isDigitsOnly
+import com.danand.juicynoise.effects.EffectDelay
 import com.danand.juicynoise.signalprocessors.SignalProcessorSensors
 import com.danand.juicynoise.ui.theme.JuicyNoiseTheme
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -148,7 +149,9 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         proximity = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
 
         val signalProcessor = SignalProcessorSensors(sensorsState)
-        audioOutput = AudioOutput(signalProcessor)
+        val effect = EffectDelay(sensorsState)
+
+        audioOutput = AudioOutput(signalProcessor, effect)
 
         setContent {
             JuicyNoiseTheme {
