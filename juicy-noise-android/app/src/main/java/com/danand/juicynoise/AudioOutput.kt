@@ -1,11 +1,11 @@
 package com.danand.juicynoise
 
 import com.danand.juicynoise.interfaces.SignalProcessor
+import com.danand.juicynoise.interfaces.Effect
 
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
-import com.danand.juicynoise.interfaces.Effect
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

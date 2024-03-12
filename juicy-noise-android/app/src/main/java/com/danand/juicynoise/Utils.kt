@@ -1,9 +1,6 @@
 package com.danand.juicynoise
 
-import kotlin.math.PI
 import kotlin.math.abs
-import kotlin.math.floor
-import kotlin.math.sin
 import kotlin.math.sqrt
 
 fun magnitude(x: Float, y: Float, z: Float): Float {
@@ -12,49 +9,6 @@ fun magnitude(x: Float, y: Float, z: Float): Float {
 
 fun lerp(from: Float, to: Float, ratio: Float): Float {
     return abs((1.0f - ratio) * from + (to * ratio))
-}
-
-fun sawtoothWave(time: Float, frequency: Int, amplitude: Float, phaseShift: Float): Float {
-    val period = 1.0f / frequency
-    val cycles = (time - phaseShift) / period
-    val normalizedTime = cycles - floor(cycles)
-    val amplitudeAtTime = amplitude * (2.0f * normalizedTime - 1.0f)
-
-    return amplitudeAtTime
-}
-
-fun squareWave(time: Float, frequency: Int, amplitude: Float, phaseShift: Float): Float {
-    val period = 1.0f / frequency
-    val cycles = (time - phaseShift) / period
-    val normalizedTime = cycles - floor(cycles)
-    val amplitudeAtTime = if (normalizedTime < 0.5f) amplitude else -amplitude
-
-    return amplitudeAtTime
-}
-
-fun sineWave(time: Float, frequency: Int, amplitude: Float, phaseShift: Float): Float {
-    val period = 1.0f / frequency
-    val cycles = (time - phaseShift) / period
-    val angle = 2.0f * PI.toFloat() * cycles
-    val amplitudeAtTime = amplitude * sin(angle)
-
-    return amplitudeAtTime
-}
-
-fun exoticWave(time: Float, frequency: Int, amplitude: Float, phaseShift: Float): Float {
-    val period = 1.0f / frequency
-    val cycles = (time - phaseShift) / period
-    val normalizedTime = cycles - floor(cycles)
-
-    val amplitudeAtTime: Float
-
-    if (normalizedTime <= 0.5f) {
-        amplitudeAtTime = 2.0f * amplitude * normalizedTime
-    } else {
-        amplitudeAtTime = 2.0f * amplitude * (1.0f - normalizedTime)
-    }
-
-    return amplitudeAtTime
 }
 
 fun inverseLerp(from: Float, to: Float, value: Float): Float {

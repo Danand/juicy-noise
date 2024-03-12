@@ -4,19 +4,18 @@ import androidx.compose.runtime.MutableState
 
 import com.danand.juicynoise.Sensors
 import com.danand.juicynoise.WeightedRandomChoice
-import com.danand.juicynoise.exoticWave
 import com.danand.juicynoise.interfaces.SignalProcessor
+import com.danand.juicynoise.interfaces.Synth
 import com.danand.juicynoise.magnitude
 import com.danand.juicynoise.normalizeOnto
-import com.danand.juicynoise.sineWave
-import com.danand.juicynoise.squareWave
-import com.danand.juicynoise.sawtoothWave
+import com.danand.juicynoise.synths.SynthExotic
+import com.danand.juicynoise.synths.SynthSawtooth
+import com.danand.juicynoise.synths.SynthSine
+import com.danand.juicynoise.synths.SynthSquare
 
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.random.Random
-
-typealias Synth = (time: Float, frequency: Int, amplitude: Float, phaseShift: Float) -> Float
 
 class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : SignalProcessor {
     private val sensorGetters: Array<() -> Float> = arrayOf(
@@ -53,10 +52,10 @@ class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : 
     )
 
     private val synths: Array<Synth> = arrayOf(
-        ::sineWave,
-        ::squareWave,
-        ::sawtoothWave,
-        ::exoticWave,
+        SynthSine(),
+        SynthSquare(),
+        SynthSawtooth(),
+        SynthExotic(),
     )
 
     private val mapping: Array<Int> = Array(this.synths.count()) {
@@ -112,7 +111,7 @@ class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : 
                 frequencyMax,
             ).toInt()
 
-            val sampleValueSynth = synth(
+            val sampleValueSynth = synth.getSample(
                 time,
                 frequency,
                 amplitudeMax,
