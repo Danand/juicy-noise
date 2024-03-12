@@ -3,7 +3,9 @@
     ExperimentalComposeUiApi::class,
 )
 
-package com.danand.juicynoise
+package com.danand.juicynoise.composables
+
+import com.danand.juicynoise.data.AudioBufferSize
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,17 +32,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-enum class AudioBufferSize(val value: Int) {
-    SIZE_64(64),
-    SIZE_96(96),
-    SIZE_128(128),
-    SIZE_256(256),
-    SIZE_512(512),
-    SIZE_1024(1024),
-    SIZE_2048(2048),
-    SIZE_4096(4096),
-}
 
 @Composable
 fun AudioBufferSizeTextField(

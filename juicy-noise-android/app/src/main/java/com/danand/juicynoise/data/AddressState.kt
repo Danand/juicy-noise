@@ -1,4 +1,4 @@
-package com.danand.juicynoise
+package com.danand.juicynoise.data
 
 import androidx.compose.runtime.MutableState
 

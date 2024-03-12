@@ -1,8 +1,8 @@
-package com.danand.juicynoise
+package com.danand.juicynoise.utils
 
 import kotlin.random.Random
 
-class WeightedRandomChoice<T>(private val items: List<Pair<T, Double>>) {
+class WeightedChoice<T>(private val items: List<Pair<T, Double>>) {
 
     private val cumulativeProbabilities: List<Double> = calculateCumulativeProbabilities()
 

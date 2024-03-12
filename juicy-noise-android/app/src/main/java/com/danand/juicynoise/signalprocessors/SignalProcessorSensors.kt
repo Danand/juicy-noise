@@ -1,17 +1,17 @@
 package com.danand.juicynoise.signalprocessors
 
-import androidx.compose.runtime.MutableState
-
-import com.danand.juicynoise.Sensors
-import com.danand.juicynoise.WeightedRandomChoice
+import com.danand.juicynoise.data.Sensors
+import com.danand.juicynoise.utils.WeightedChoice
 import com.danand.juicynoise.interfaces.SignalProcessor
 import com.danand.juicynoise.interfaces.Synth
-import com.danand.juicynoise.magnitude
-import com.danand.juicynoise.normalizeOnto
+import com.danand.juicynoise.utils.magnitude
+import com.danand.juicynoise.utils.normalizeOnto
 import com.danand.juicynoise.synths.SynthExotic
 import com.danand.juicynoise.synths.SynthSawtooth
 import com.danand.juicynoise.synths.SynthSine
 import com.danand.juicynoise.synths.SynthSquare
+
+import androidx.compose.runtime.MutableState
 
 import kotlin.math.abs
 import kotlin.math.max
@@ -43,7 +43,8 @@ class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : 
             this.sensorsState.value.magneticX,
             this.sensorsState.value.magneticY,
             this.sensorsState.value.magneticZ,
-        )},
+        )
+        },
         { sensorsState.value.light },
         { sensorsState.value.pressure },
         { sensorsState.value.proximity },
@@ -100,7 +101,7 @@ class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : 
             val sensorValue = sensorGetter()
 
             if (accelerationMagnitude > 40) {
-                frequencyMax = WeightedRandomChoice(frequencyMaxToWeights).next()
+                frequencyMax = WeightedChoice(frequencyMaxToWeights).next()
             }
 
             val frequency = normalizeOnto(

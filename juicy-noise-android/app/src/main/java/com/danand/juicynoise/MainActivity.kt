@@ -4,6 +4,14 @@
 
 package com.danand.juicynoise
 
+import com.danand.juicynoise.composables.AudioBufferSizeTextField
+import com.danand.juicynoise.data.AddressState
+import com.danand.juicynoise.data.AudioBufferSize
+import com.danand.juicynoise.data.Sensors
+import com.danand.juicynoise.effects.EffectDelay
+import com.danand.juicynoise.signalprocessors.SignalProcessorSensors
+import com.danand.juicynoise.ui.theme.JuicyNoiseTheme
+
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
@@ -25,6 +33,7 @@ import android.telephony.SignalStrength
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import android.util.Log
+
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -58,22 +67,23 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.text.isDigitsOnly
-import com.danand.juicynoise.effects.EffectDelay
-import com.danand.juicynoise.signalprocessors.SignalProcessorSensors
-import com.danand.juicynoise.ui.theme.JuicyNoiseTheme
+
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.gson.GsonBuilder
+
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
 import java.io.DataOutputStream
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.math.floor

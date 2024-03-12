@@ -1,4 +1,4 @@
-package com.danand.juicynoise
+package com.danand.juicynoise.utils
 
 import kotlin.math.abs
 import kotlin.math.sqrt

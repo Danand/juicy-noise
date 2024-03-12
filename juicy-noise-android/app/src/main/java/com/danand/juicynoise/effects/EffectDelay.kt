@@ -1,13 +1,13 @@
 package com.danand.juicynoise.effects
 
-import com.danand.juicynoise.Sensors
+import com.danand.juicynoise.data.Sensors
 import com.danand.juicynoise.interfaces.Effect
-import com.danand.juicynoise.magnitude
+import com.danand.juicynoise.utils.magnitude
+
+import androidx.compose.runtime.MutableState
 
 import kotlin.math.max
 import kotlin.math.ceil
-
-import androidx.compose.runtime.MutableState
 import kotlin.math.abs
 
 class EffectDelay(
