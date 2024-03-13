@@ -59,8 +59,12 @@ class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : 
         SynthExotic(),
     )
 
-    private val mapping: Array<Int> = Array(this.synths.count()) {
+    private val initRandomizedMapping = {
         Random.nextInt(0, this.sensorGetters.count())
+    }
+
+    private val mapping: Array<Int> = Array(this.synths.count()) {
+        initRandomizedMapping()
     }
 
     private val frequencyMaxToWeights = listOf(
@@ -77,9 +81,7 @@ class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : 
         )
 
         if (angularSpeedMagnitude > 10) {
-            randomizeMapping(this.mapping) {
-                Random.nextInt(0, this.sensorGetters.count())
-            }
+            randomizeMapping(this.mapping, initRandomizedMapping)
         }
 
         val accelerationMagnitude = magnitude(
