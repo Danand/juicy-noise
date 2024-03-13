@@ -78,7 +78,12 @@ class AudioOutput(
                 //    effect.process(floatArray, bufferSize)
                 //}
 
-                audioTrack.write(floatArray, 0, bufferSize, AudioTrack.WRITE_NON_BLOCKING)
+                audioTrack.write(
+                    floatArray,
+                    0,
+                    bufferSize,
+                    AudioTrack.WRITE_NON_BLOCKING,
+                )
 
                 timeCurrent += bufferSize * sampleTimeStep
             }

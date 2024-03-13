@@ -43,8 +43,7 @@ class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : 
             this.sensorsState.value.magneticX,
             this.sensorsState.value.magneticY,
             this.sensorsState.value.magneticZ,
-        )
-        },
+        ) },
         { sensorsState.value.light },
         { sensorsState.value.pressure },
         { sensorsState.value.proximity },
@@ -91,7 +90,6 @@ class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : 
         )
 
         var frequencyMax = 700.0f
-
         val amplitudeMax = 0.9f
 
         var sampleValueTotal = 0.0f

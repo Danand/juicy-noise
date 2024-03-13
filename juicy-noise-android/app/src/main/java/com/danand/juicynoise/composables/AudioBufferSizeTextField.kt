@@ -49,7 +49,7 @@ fun AudioBufferSizeTextField(
             label = {
                 Text("Audio Buffer Size")
             },
-            onValueChange =  { },
+            onValueChange = { },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.None,
@@ -57,8 +57,8 @@ fun AudioBufferSizeTextField(
             modifier = Modifier.fillMaxWidth()
                                .height(72.dp)
                                .focusRequester(focusRequester)
-                               .onFocusChanged { focusState ->
-                                   if (focusState.isFocused) {
+                               .onFocusChanged {
+                                   if (it.isFocused) {
                                        keyboardController?.hide()
                                        expanded.value = true
                                    } else {
@@ -69,13 +69,15 @@ fun AudioBufferSizeTextField(
 
         DropdownMenu(
             expanded = expanded.value,
-            onDismissRequest = { expanded.value = false },
+            onDismissRequest = {
+                expanded.value = false
+            },
         ) {
-            AudioBufferSize.values().forEach { bufferSize ->
+            AudioBufferSize.values().forEach {
                 DropdownMenuItem(
                     text = {
                         Text(
-                            text = bufferSize.value.toString(),
+                            text = it.value.toString(),
                             style = TextStyle(
                                 fontSize = 16.sp,
                                 color = Color.Red,
@@ -84,7 +86,7 @@ fun AudioBufferSizeTextField(
                         )
                     },
                     onClick = {
-                        onItemSelected(bufferSize)
+                        onItemSelected(it)
                         expanded.value = false
                     },
                 )

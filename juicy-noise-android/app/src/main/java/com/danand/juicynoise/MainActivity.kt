@@ -290,7 +290,7 @@ fun findFirstAddressWithOpenedPort(subnet: String?, port: UShort): String? {
             socket.connect(
                 InetSocketAddress(
                     address,
-                    port.toInt()
+                    port.toInt(),
                 ),
                 200
             )
@@ -328,9 +328,8 @@ fun ColumnMain(
     }
 
     Column(
-        modifier = Modifier
-            .padding(36.dp)
-            .verticalScroll(rememberScrollState()),
+        modifier = Modifier.padding(36.dp)
+                           .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -348,9 +347,8 @@ fun ColumnMain(
                 keyboardType = KeyboardType.NumberPassword
             ),
             isError = checkIsValidIp(ipState.value) == false,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(72.dp),
+            modifier = Modifier.fillMaxWidth()
+                               .height(72.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -368,9 +366,8 @@ fun ColumnMain(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
             ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(72.dp),
+            modifier = Modifier.fillMaxWidth()
+                               .height(72.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -386,9 +383,8 @@ fun ColumnMain(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
             ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(72.dp),
+            modifier = Modifier.fillMaxWidth()
+                               .height(72.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -447,9 +443,8 @@ fun ColumnMain(
                         fontFamily = FontFamily.Monospace,
                     )
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                modifier = Modifier.fillMaxWidth()
+                                   .height(56.dp),
                 readOnly = true,
                 textStyle = TextStyle(
                     fontFamily = FontFamily.Monospace,
@@ -557,7 +552,7 @@ fun ButtonConnect(
                 errorState,
                 sensorsState,
                 audioBufferSizeState,
-                sampleRateState
+                sampleRateState,
             )
         },
         colors = textButtonColors(
