@@ -755,11 +755,11 @@ fun runReadingLocation(
 
 @SuppressLint("MissingPermission")
 suspend fun readLocation(locationClient: FusedLocationProviderClient): Location = suspendCoroutine { continuation ->
-    locationClient.lastLocation.addOnCompleteListener {
-        if (it.exception == null) {
-            continuation.resume(it.result!!)
+    locationClient.lastLocation.addOnCompleteListener { task ->
+        if (task.exception == null) {
+            continuation.resume(task.result!!)
         } else {
-            throw it.exception!!
+            throw task.exception!!
         }
     }
 }
