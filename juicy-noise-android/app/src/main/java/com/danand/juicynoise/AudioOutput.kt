@@ -49,28 +49,28 @@ class AudioOutput(
 
             audioTrack.play()
 
-            val floatArray = FloatArray(bufferSize)
+            val bufferStereo = FloatArray(bufferSize)
+
+            val bufferSizeMono = bufferSize / 2
+
+            val bufferMono = FloatArray(bufferSizeMono)
 
             val sampleTimeStep = 1.0f / samplingRate
 
-            val timeStart = System.currentTimeMillis() * 1000.0f
-
-            var timeCurrent = timeStart
+            var timeElapsedSeconds = 0.0f
 
             while (isActive) {
-                val timeElapsedSeconds = timeCurrent - timeStart
+                for (sampleIndex in bufferMono.indices) {
+                    val sampleTime = timeElapsedSeconds + (sampleIndex * sampleTimeStep)
 
-                var sampleMax = 0.0f
-
-                for (i in floatArray.indices) {
-                    val sampleTime = timeElapsedSeconds + (i * sampleTimeStep)
+                    var sampleValueMax = 0.0f
 
                     for (signalProcessor in signalProcessors) {
-                        val sample = signalProcessor.process(sampleTime)
-                        sampleMax = max(sampleMax, sample)
+                        val sampleValue = signalProcessor.process(sampleTime)
+                        sampleValueMax = max(sampleValueMax, sampleValue)
                     }
 
-                    floatArray[i] = sampleMax
+                    bufferMono[sampleIndex] = sampleValueMax
                 }
 
                 // TODO: Uncomment when delay effect will be fixed.
@@ -78,14 +78,23 @@ class AudioOutput(
                 //    effect.process(floatArray, bufferSize)
                 //}
 
+                timeElapsedSeconds += bufferSizeMono * sampleTimeStep
+
+                var sampleIndexStereo = 0
+
+                for (sampleIndexMono in bufferMono.indices) {
+                    bufferStereo[sampleIndexStereo] = bufferMono[sampleIndexMono]
+                    bufferStereo[sampleIndexStereo + 1] = bufferMono[sampleIndexMono]
+
+                    sampleIndexStereo += 2
+                }
+
                 audioTrack.write(
-                    floatArray,
+                    bufferStereo,
                     0,
                     bufferSize,
-                    AudioTrack.WRITE_NON_BLOCKING,
+                    AudioTrack.WRITE_BLOCKING,
                 )
-
-                timeCurrent += bufferSize * sampleTimeStep
             }
 
             audioTrack.stop()

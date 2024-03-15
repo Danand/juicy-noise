@@ -1,6 +1,8 @@
 package com.danand.juicynoise.utils
 
 import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sqrt
 
 fun magnitude(x: Float, y: Float, z: Float): Float {
@@ -40,8 +42,11 @@ fun normalizeOnto(
     toStart: Float,
     toEnd: Float,
     ): Float {
-    val normalizedValue = (value - fromStart) / (fromEnd - fromStart)
-    val mappedValue = normalizedValue * (toEnd - toStart) + toStart
+    val ratio = (value - fromStart) / (fromEnd - fromStart)
+    val normalizedValue = ratio * (toEnd - toStart) + toStart
 
-    return mappedValue
+    var normalizedValueClamped = max(normalizedValue, toStart)
+    normalizedValueClamped = min(normalizedValue, toEnd)
+
+    return normalizedValueClamped
 }
