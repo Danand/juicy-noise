@@ -66,13 +66,11 @@ class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : 
         initRandomizedPhases()
     }
 
-    private val initRandomizedMapping = {
-        Random.nextInt(0, this.sensorGetters.count())
+    private val mappingIndices: Array<Int> = Array(this.sensorGetters.count()) {
+        it
     }
 
-    private val mapping: Array<Int> = Array(this.synths.count()) {
-        initRandomizedMapping()
-    }
+    private val mapping: IntArray = initializeMapping(this.synths.count(), mappingIndices)
 
     private val sensorGetterMinValues = FloatArray(this.sensorGetters.count())
 
@@ -103,7 +101,7 @@ class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : 
         )
 
         if (angularSpeedMagnitude > 10) {
-            randomizeMapping(this.mapping, initRandomizedMapping)
+            randomizeMapping(this.mapping, this.mappingIndices)
         }
 
         val accelerationMagnitude = magnitude(
@@ -176,9 +174,17 @@ class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : 
         return sampleValueTotal
     }
 
-    private fun randomizeMapping(mapping: Array<Int>, init: () -> Int) {
+    private fun initializeMapping(amount: Int, mappingIndices: Array<Int>): IntArray {
+        val mapping = IntArray(amount)
+        randomizeMapping(mapping, mappingIndices)
+        return mapping
+    }
+
+    private fun randomizeMapping(mapping: IntArray, mappingIndices: Array<Int>) {
+        mappingIndices.shuffle()
+
         for (index in mapping.indices) {
-            mapping[index] = init()
+            mapping[index] = mappingIndices[index]
         }
     }
 
