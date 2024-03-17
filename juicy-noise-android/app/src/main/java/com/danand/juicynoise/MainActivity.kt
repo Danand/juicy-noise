@@ -59,13 +59,17 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -182,7 +186,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
         setContent {
             JuicyNoiseTheme {
-                ColumnMain(
+                TabScreen(
                     addressState.ip,
                     addressState.port,
                     isRunningState,
@@ -317,7 +321,7 @@ fun findFirstAddressWithOpenedPort(subnet: String?, port: UShort): String? {
 }
 
 @Composable
-fun ColumnMain(
+fun TabScreen(
     ipState: MutableState<String>,
     portState: MutableState<UShort>,
     isRunningState: MutableState<Boolean>,
@@ -328,6 +332,189 @@ fun ColumnMain(
     locationClient: FusedLocationProviderClient,
     connectivityManager: ConnectivityManager,
     audioOutput: AudioOutput,
+    isShowingSensorsState: MutableState<Boolean>,
+) {
+    var tabIndex by remember { mutableStateOf(0) }
+
+    val tabs = listOf(
+        "Standalone",
+        "VST",
+    )
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        TabRow(selectedTabIndex = tabIndex) {
+            tabs.forEachIndexed { index, title ->
+                Tab(text = { Text(title) },
+                    selected = tabIndex == index,
+                    onClick = { tabIndex = index }
+                )
+            }
+        }
+        when (tabIndex) {
+            0 -> TabStandalone(
+                isRunningState,
+                errorState,
+                sensorsState,
+                audioBufferSizeState,
+                sampleRateState,
+                locationClient,
+                audioOutput,
+                isShowingSensorsState,
+            )
+            1 -> TabVST(
+                ipState,
+                portState,
+                isRunningState,
+                errorState,
+                sensorsState,
+                audioBufferSizeState,
+                sampleRateState,
+                locationClient,
+                connectivityManager,
+                isShowingSensorsState,
+            )
+        }
+    }
+}
+
+@Composable
+fun TabStandalone(
+    isRunningState: MutableState<Boolean>,
+    errorState: MutableState<String?>,
+    sensorsState: MutableState<Sensors>,
+    audioBufferSizeState: MutableState<AudioBufferSize>,
+    sampleRateState: MutableState<Int>,
+    locationClient: FusedLocationProviderClient,
+    audioOutput: AudioOutput,
+    isShowingSensorsState: MutableState<Boolean>,
+) {
+    Column(
+        modifier = Modifier
+            .padding(36.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        OutlinedTextField(
+            value = sampleRateState.value.toString(),
+            onValueChange = {
+                sampleRateState.value = it.toInt()
+            },
+            label = {
+                Text("Sample Rate")
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        AudioBufferSizeTextField(
+            selectedBufferSize = audioBufferSizeState.value,
+            onItemSelected = { audioBufferSizeState.value = it }
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        if (isRunningState.value) {
+            ButtonStopDemo(
+                isRunningState,
+                audioOutput,
+            )
+        } else {
+            ButtonPlayDemo(
+                isRunningState,
+                sensorsState,
+                audioBufferSizeState,
+                sampleRateState,
+                locationClient,
+                audioOutput,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        LabelledCheckBox(
+            label = "Show sensor values",
+            checked = isShowingSensorsState.value,
+            onCheckedChange = {
+                isShowingSensorsState.value = it
+            },
+        )
+
+        if (isShowingSensorsState.value) {
+            Spacer(modifier = Modifier.height(24.dp))
+
+            val orange = Color.hsv(0f, 0.9843f, 0.9843f)
+
+            enumerateSensors(sensorsState.value).forEach {
+                OutlinedTextField(
+                    value = it.second.toString(),
+                    onValueChange = { },
+                    label = {
+                        Text(
+                            text = it.first,
+                            fontFamily = FontFamily.Monospace,
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                                       .height(56.dp),
+                    readOnly = true,
+                    textStyle = TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                    ),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        disabledLabelColor = orange,
+                        focusedLabelColor = orange,
+                        errorLabelColor = orange,
+                        unfocusedLabelColor = orange,
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+
+        if (errorState.value != null) {
+            AlertDialog(
+                onDismissRequest = {
+                    errorState.value = null
+                },
+                title = {
+                    Text("ERROR")
+                },
+                text = {
+                    Text(errorState.value.toString())
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            errorState.value = null
+                        },
+                    ) {
+                        Text("OK")
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun TabVST(
+    ipState: MutableState<String>,
+    portState: MutableState<UShort>,
+    isRunningState: MutableState<Boolean>,
+    errorState: MutableState<String?>,
+    sensorsState: MutableState<Sensors>,
+    audioBufferSizeState: MutableState<AudioBufferSize>,
+    sampleRateState: MutableState<Int>,
+    locationClient: FusedLocationProviderClient,
+    connectivityManager: ConnectivityManager,
     isShowingSensorsState: MutableState<Boolean>,
 ) {
     LaunchedEffect(portState) {
@@ -416,11 +603,6 @@ fun ColumnMain(
             ButtonDisconnect(
                 isRunningState,
             )
-
-            ButtonStopDemo(
-                isRunningState,
-                audioOutput,
-            )
         } else {
             ButtonConnect(
                 ipState.value,
@@ -434,15 +616,6 @@ fun ColumnMain(
             ) {
                 checkIsValidIp(ipState.value)
             }
-
-            ButtonPlayDemo(
-                isRunningState,
-                sensorsState,
-                audioBufferSizeState,
-                sampleRateState,
-                locationClient,
-                audioOutput,
-            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -635,7 +808,7 @@ fun ButtonPlayDemo(
         ),
         enabled = true
     ) {
-        Text("Play demo")
+        Text("Play")
     }
 }
 
