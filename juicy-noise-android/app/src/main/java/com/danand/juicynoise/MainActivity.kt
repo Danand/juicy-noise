@@ -421,12 +421,12 @@ fun TabStandalone(
         Spacer(modifier = Modifier.height(24.dp))
 
         if (isRunningState.value) {
-            ButtonStopDemo(
+            ButtonStopStandaloneAudio(
                 isRunningState,
                 audioOutput,
             )
         } else {
-            ButtonPlayDemo(
+            ButtonPlayStandaloneAudio(
                 isRunningState,
                 sensorsState,
                 audioBufferSizeState,
@@ -775,7 +775,7 @@ fun ButtonConnect(
 }
 
 @Composable
-fun ButtonPlayDemo(
+fun ButtonPlayStandaloneAudio(
     isRunningState: MutableState<Boolean>,
     sensorsState: MutableState<Sensors>,
     audioBufferSizeState: MutableState<AudioBufferSize>,
@@ -834,7 +834,7 @@ fun ButtonDisconnect(
 }
 
 @Composable
-fun ButtonStopDemo(
+fun ButtonStopStandaloneAudio(
     isRunning: MutableState<Boolean>,
     audioOutput: AudioOutput,
 ) {
@@ -852,7 +852,7 @@ fun ButtonStopDemo(
             disabledElevation = 0.dp,
         ),
     ) {
-        Text("Stop demo")
+        Text("Stop")
     }
 }
 
