@@ -931,8 +931,10 @@ fun runReadingLocation(
         while (isRunningState.value) {
             val location = readLocation(locationClient)
 
-            sensorsState.value.longitude = location.longitude.toFloat()
-            sensorsState.value.latitude = location.latitude.toFloat()
+            if (location != null) {
+                sensorsState.value.longitude = location.longitude.toFloat()
+                sensorsState.value.latitude = location.latitude.toFloat()
+            }
 
             delay(5000)
         }
@@ -940,10 +942,10 @@ fun runReadingLocation(
 }
 
 @SuppressLint("MissingPermission")
-suspend fun readLocation(locationClient: FusedLocationProviderClient): Location = suspendCoroutine { continuation ->
+suspend fun readLocation(locationClient: FusedLocationProviderClient): Location? = suspendCoroutine { continuation ->
     locationClient.lastLocation.addOnCompleteListener { task ->
         if (task.exception == null) {
-            continuation.resume(task.result!!)
+            continuation.resume(task.result)
         } else {
             throw task.exception!!
         }

@@ -42,7 +42,14 @@ fun normalizeOnto(
     toStart: Float,
     toEnd: Float,
     ): Float {
-    val ratio = (value - fromStart) / (fromEnd - fromStart)
+    val max = (fromEnd - fromStart)
+
+    val ratio = if (max == 0.0f) {
+        0.0f
+    } else {
+        (value - fromStart) / max
+    }
+
     val normalizedValue = ratio * (toEnd - toStart) + toStart
 
     var normalizedValueClamped = max(normalizedValue, toStart)
