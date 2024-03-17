@@ -395,27 +395,9 @@ fun TabStandalone(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        OutlinedTextField(
-            value = sampleRateState.value.toString(),
-            onValueChange = {
-                sampleRateState.value = it.toInt()
-            },
-            label = {
-                Text("Sample Rate")
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(72.dp),
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        AudioBufferSizeTextField(
-            selectedBufferSize = audioBufferSizeState.value,
-            onItemSelected = { audioBufferSizeState.value = it }
+        AudioSettings(
+            sampleRateState,
+            audioBufferSizeState,
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -436,71 +418,14 @@ fun TabStandalone(
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        LabelledCheckBox(
-            label = "Show sensor values",
-            checked = isShowingSensorsState.value,
-            onCheckedChange = {
-                isShowingSensorsState.value = it
-            },
+        SensorValues(
+            sensorsState,
+            isShowingSensorsState,
         )
 
-        if (isShowingSensorsState.value) {
-            Spacer(modifier = Modifier.height(24.dp))
-
-            val orange = Color.hsv(0f, 0.9843f, 0.9843f)
-
-            enumerateSensors(sensorsState.value).forEach {
-                OutlinedTextField(
-                    value = it.second.toString(),
-                    onValueChange = { },
-                    label = {
-                        Text(
-                            text = it.first,
-                            fontFamily = FontFamily.Monospace,
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                                       .height(56.dp),
-                    readOnly = true,
-                    textStyle = TextStyle(
-                        fontFamily = FontFamily.Monospace,
-                    ),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        disabledLabelColor = orange,
-                        focusedLabelColor = orange,
-                        errorLabelColor = orange,
-                        unfocusedLabelColor = orange,
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-        }
-
-        if (errorState.value != null) {
-            AlertDialog(
-                onDismissRequest = {
-                    errorState.value = null
-                },
-                title = {
-                    Text("ERROR")
-                },
-                text = {
-                    Text(errorState.value.toString())
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            errorState.value = null
-                        },
-                    ) {
-                        Text("OK")
-                    }
-                }
-            )
-        }
+        AlertError(
+            errorState,
+        )
     }
 }
 
@@ -547,9 +472,8 @@ fun TabVST(
                 keyboardType = KeyboardType.NumberPassword
             ),
             isError = checkIsValidIp(ipState.value) == false,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(72.dp),
+            modifier = Modifier.fillMaxWidth()
+                               .height(72.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -567,34 +491,15 @@ fun TabVST(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
             ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(72.dp),
+            modifier = Modifier.fillMaxWidth()
+                               .height(72.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-            value = sampleRateState.value.toString(),
-            onValueChange = {
-                sampleRateState.value = it.toInt()
-            },
-            label = {
-                Text("Sample Rate")
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(72.dp),
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        AudioBufferSizeTextField(
-            selectedBufferSize = audioBufferSizeState.value,
-            onItemSelected = { audioBufferSizeState.value = it }
+        AudioSettings(
+            sampleRateState,
+            audioBufferSizeState,
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -618,70 +523,118 @@ fun TabVST(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        LabelledCheckBox(
-            label = "Show sensor values",
-            checked = isShowingSensorsState.value,
-            onCheckedChange = {
-                isShowingSensorsState.value = it
-            },
+        SensorValues(
+            sensorsState,
+            isShowingSensorsState,
         )
 
-        if (isShowingSensorsState.value) {
-            Spacer(modifier = Modifier.height(24.dp))
+        AlertError(
+            errorState,
+        )
+    }
+}
 
-            val orange = Color.hsv(0f, 0.9843f, 0.9843f)
+@Composable
+fun AudioSettings(
+    sampleRateState: MutableState<Int>,
+    audioBufferSizeState: MutableState<AudioBufferSize>,
+) {
+    OutlinedTextField(
+        value = sampleRateState.value.toString(),
+        onValueChange = {
+            sampleRateState.value = it.toInt()
+        },
+        label = {
+            Text("Sample Rate")
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+        ),
+        modifier = Modifier.fillMaxWidth()
+                           .height(72.dp),
+    )
 
-            enumerateSensors(sensorsState.value).forEach {
-                OutlinedTextField(
-                    value = it.second.toString(),
-                    onValueChange = { },
-                    label = {
-                        Text(
-                            text = it.first,
-                            fontFamily = FontFamily.Monospace,
-                        )
+    Spacer(modifier = Modifier.height(16.dp))
+
+    AudioBufferSizeTextField(
+        selectedBufferSize = audioBufferSizeState.value,
+        onItemSelected = { audioBufferSizeState.value = it }
+    )
+}
+
+@Composable
+fun AlertError(
+    errorState: MutableState<String?>,
+) {
+    if (errorState.value != null) {
+        AlertDialog(
+            onDismissRequest = {
+                errorState.value = null
+            },
+            title = {
+                Text("ERROR")
+            },
+            text = {
+                Text(errorState.value.toString())
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        errorState.value = null
                     },
-                    modifier = Modifier.fillMaxWidth()
-                                       .height(56.dp),
-                    readOnly = true,
-                    textStyle = TextStyle(
-                        fontFamily = FontFamily.Monospace,
-                    ),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        disabledLabelColor = orange,
-                        focusedLabelColor = orange,
-                        errorLabelColor = orange,
-                        unfocusedLabelColor = orange,
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-        }
-
-        if (errorState.value != null) {
-            AlertDialog(
-                onDismissRequest = {
-                    errorState.value = null
-                },
-                title = {
-                    Text("ERROR")
-                },
-                text = {
-                    Text(errorState.value.toString())
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            errorState.value = null
-                        },
-                    ) {
-                        Text("OK")
-                    }
+                ) {
+                    Text("OK")
                 }
+            }
+        )
+    }
+}
+
+@Composable
+fun SensorValues(
+    sensorsState: MutableState<Sensors>,
+    isShowingSensorsState: MutableState<Boolean>
+) {
+    Spacer(modifier = Modifier.height(24.dp))
+
+    LabelledCheckBox(
+        label = "Show sensor values",
+        checked = isShowingSensorsState.value,
+        onCheckedChange = {
+            isShowingSensorsState.value = it
+        },
+    )
+
+    if (isShowingSensorsState.value) {
+        Spacer(modifier = Modifier.height(24.dp))
+
+        val orange = Color.hsv(0f, 0.9843f, 0.9843f)
+
+        enumerateSensors(sensorsState.value).forEach {
+            OutlinedTextField(
+                value = it.second.toString(),
+                onValueChange = { },
+                label = {
+                    Text(
+                        text = it.first,
+                        fontFamily = FontFamily.Monospace,
+                    )
+                },
+                modifier = Modifier.fillMaxWidth()
+                                   .height(56.dp),
+                readOnly = true,
+                textStyle = TextStyle(
+                    fontFamily = FontFamily.Monospace,
+                ),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    disabledLabelColor = orange,
+                    focusedLabelColor = orange,
+                    errorLabelColor = orange,
+                    unfocusedLabelColor = orange,
+                )
             )
+
+            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
@@ -865,14 +818,15 @@ fun LabelledCheckBox(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.clip(MaterialTheme.shapes.small)
-                           .clickable(
-                               indication = rememberRipple(color = MaterialTheme.colorScheme.primary),
-                               interactionSource = remember { MutableInteractionSource() },
-                               onClick = { onCheckedChange(!checked) }
-                           )
-                           .requiredHeight(ButtonDefaults.MinHeight)
-                           .padding(4.dp),
+        modifier = modifier
+            .clip(MaterialTheme.shapes.small)
+            .clickable(
+                indication = rememberRipple(color = MaterialTheme.colorScheme.primary),
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = { onCheckedChange(!checked) }
+            )
+            .requiredHeight(ButtonDefaults.MinHeight)
+            .padding(4.dp),
     ) {
         Checkbox(
             checked = checked,
