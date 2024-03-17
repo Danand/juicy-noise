@@ -53,7 +53,7 @@ fun normalizeOnto(
     val normalizedValue = ratio * (toEnd - toStart) + toStart
 
     var normalizedValueClamped = max(normalizedValue, toStart)
-    normalizedValueClamped = min(normalizedValue, toEnd)
+    normalizedValueClamped = min(normalizedValueClamped, toEnd)
 
     return normalizedValueClamped
 }
