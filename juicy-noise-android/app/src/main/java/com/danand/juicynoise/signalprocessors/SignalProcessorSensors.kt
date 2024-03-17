@@ -18,7 +18,10 @@ import kotlin.math.min
 import kotlin.math.tanh
 import kotlin.random.Random
 
-class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : SignalProcessor {
+class SignalProcessorSensors(
+    private val sensorsState: MutableState<Sensors>,
+    private val channel: Int,
+    ) : SignalProcessor {
     private val sensorGetters: Array<() -> Float> = arrayOf(
         { sensorsState.value.longitude },
         { sensorsState.value.latitude },
@@ -92,6 +95,10 @@ class SignalProcessorSensors(private val sensorsState: MutableState<Sensors>) : 
     }
 
     private var weirdEffectDivider = 9
+
+    override fun getChannel(): Int {
+        return this.channel
+    }
 
     override fun process(time: Float): Float {
         val angularSpeedMagnitude = magnitude(

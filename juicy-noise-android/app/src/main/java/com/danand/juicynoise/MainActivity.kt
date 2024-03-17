@@ -172,12 +172,15 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         pressure = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE)
         proximity = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
 
-        val signalProcessorSensors = SignalProcessorSensors(sensorsState)
+        val signalProcessorSensorsLeft = SignalProcessorSensors(sensorsState, 0)
+        val signalProcessorSensorsRight = SignalProcessorSensors(sensorsState, 1)
+
         val effectDelay = EffectDelay(sensorsState)
 
         audioOutput = AudioOutput(
             arrayOf(
-                signalProcessorSensors,
+                signalProcessorSensorsLeft,
+                signalProcessorSensorsRight,
             ),
             arrayOf(
                 effectDelay,

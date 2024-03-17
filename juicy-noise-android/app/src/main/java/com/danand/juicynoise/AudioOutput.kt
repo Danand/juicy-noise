@@ -53,24 +53,42 @@ class AudioOutput(
 
             val bufferSizeMono = bufferSize / 2
 
-            val bufferMono = FloatArray(bufferSizeMono)
+            val bufferMonoLeft = FloatArray(bufferSizeMono)
+            val bufferMonoRight = FloatArray(bufferSizeMono)
 
             val sampleTimeStep = 1.0f / samplingRate
 
             var timeElapsedSeconds = 0.0f
 
             while (isActive) {
-                for (sampleIndex in bufferMono.indices) {
+                for (sampleIndex in bufferMonoLeft.indices) {
                     val sampleTime = timeElapsedSeconds + (sampleIndex * sampleTimeStep)
 
                     var sampleValueMax = 0.0f
 
                     for (signalProcessor in signalProcessors) {
-                        val sampleValue = signalProcessor.process(sampleTime)
-                        sampleValueMax = max(sampleValueMax, sampleValue)
+                        if (signalProcessor.getChannel() == 0) {
+                            val sampleValue = signalProcessor.process(sampleTime)
+                            sampleValueMax = max(sampleValueMax, sampleValue)
+                        }
                     }
 
-                    bufferMono[sampleIndex] = sampleValueMax
+                    bufferMonoLeft[sampleIndex] = sampleValueMax
+                }
+
+                for (sampleIndex in bufferMonoRight.indices) {
+                    val sampleTime = timeElapsedSeconds + (sampleIndex * sampleTimeStep)
+
+                    var sampleValueMax = 0.0f
+
+                    for (signalProcessor in signalProcessors) {
+                        if (signalProcessor.getChannel() == 1) {
+                            val sampleValue = signalProcessor.process(sampleTime)
+                            sampleValueMax = max(sampleValueMax, sampleValue)
+                        }
+                    }
+
+                    bufferMonoRight[sampleIndex] = sampleValueMax
                 }
 
                 // TODO: Uncomment when delay effect will be fixed.
@@ -82,9 +100,9 @@ class AudioOutput(
 
                 var sampleIndexStereo = 0
 
-                for (sampleIndexMono in bufferMono.indices) {
-                    bufferStereo[sampleIndexStereo] = bufferMono[sampleIndexMono]
-                    bufferStereo[sampleIndexStereo + 1] = bufferMono[sampleIndexMono]
+                for (sampleIndexMono in bufferMonoLeft.indices) {
+                    bufferStereo[sampleIndexStereo] = bufferMonoLeft[sampleIndexMono]
+                    bufferStereo[sampleIndexStereo + 1] = bufferMonoRight[sampleIndexMono]
 
                     sampleIndexStereo += 2
                 }
