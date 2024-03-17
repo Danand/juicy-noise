@@ -36,19 +36,26 @@ import android.util.Log
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonDefaults.textButtonColors
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -58,8 +65,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -96,6 +105,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private val errorState = mutableStateOf<String?>(null)
     private val audioBufferSizeState = mutableStateOf(AudioBufferSize.SIZE_256)
     private val sampleRateState = mutableStateOf(44100)
+    private val isShowingSensorsState = mutableStateOf(false)
 
     private lateinit var sensorManager: SensorManager
     private lateinit var audioOutput: AudioOutput
@@ -183,6 +193,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                     locationClient,
                     connectivityManager,
                     audioOutput,
+                    isShowingSensorsState,
                 )
             }
         }
@@ -317,6 +328,7 @@ fun ColumnMain(
     locationClient: FusedLocationProviderClient,
     connectivityManager: ConnectivityManager,
     audioOutput: AudioOutput,
+    isShowingSensorsState: MutableState<Boolean>,
 ) {
     LaunchedEffect(portState) {
         val subnet = findSubnet(connectivityManager)
@@ -328,8 +340,9 @@ fun ColumnMain(
     }
 
     Column(
-        modifier = Modifier.padding(36.dp)
-                           .verticalScroll(rememberScrollState()),
+        modifier = Modifier
+            .padding(36.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -347,8 +360,9 @@ fun ColumnMain(
                 keyboardType = KeyboardType.NumberPassword
             ),
             isError = checkIsValidIp(ipState.value) == false,
-            modifier = Modifier.fillMaxWidth()
-                               .height(72.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -366,8 +380,9 @@ fun ColumnMain(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
             ),
-            modifier = Modifier.fillMaxWidth()
-                               .height(72.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -383,8 +398,9 @@ fun ColumnMain(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
             ),
-            modifier = Modifier.fillMaxWidth()
-                               .height(72.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -431,33 +447,45 @@ fun ColumnMain(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        val orange = Color.hsv(0f, 0.9843f, 0.9843f)
+        LabelledCheckBox(
+            label = "Show sensor values",
+            checked = isShowingSensorsState.value,
+            onCheckedChange = {
+                isShowingSensorsState.value = it
+            },
+        )
 
-        enumerateSensors(sensorsState.value).forEach {
-            OutlinedTextField(
-                value = it.second.toString(),
-                onValueChange = { },
-                label = {
-                    Text(
-                        text = it.first,
+        if (isShowingSensorsState.value) {
+            Spacer(modifier = Modifier.height(24.dp))
+
+            val orange = Color.hsv(0f, 0.9843f, 0.9843f)
+
+            enumerateSensors(sensorsState.value).forEach {
+                OutlinedTextField(
+                    value = it.second.toString(),
+                    onValueChange = { },
+                    label = {
+                        Text(
+                            text = it.first,
+                            fontFamily = FontFamily.Monospace,
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                                       .height(56.dp),
+                    readOnly = true,
+                    textStyle = TextStyle(
                         fontFamily = FontFamily.Monospace,
+                    ),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        disabledLabelColor = orange,
+                        focusedLabelColor = orange,
+                        errorLabelColor = orange,
+                        unfocusedLabelColor = orange,
                     )
-                },
-                modifier = Modifier.fillMaxWidth()
-                                   .height(56.dp),
-                readOnly = true,
-                textStyle = TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                ),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    disabledLabelColor = orange,
-                    focusedLabelColor = orange,
-                    errorLabelColor = orange,
-                    unfocusedLabelColor = orange,
                 )
-            )
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+            }
         }
 
         if (errorState.value != null) {
@@ -652,6 +680,37 @@ fun ButtonStopDemo(
         ),
     ) {
         Text("Stop demo")
+    }
+}
+
+@Composable
+fun LabelledCheckBox(
+    checked: Boolean,
+    onCheckedChange: ((Boolean) -> Unit),
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.clip(MaterialTheme.shapes.small)
+                           .clickable(
+                               indication = rememberRipple(color = MaterialTheme.colorScheme.primary),
+                               interactionSource = remember { MutableInteractionSource() },
+                               onClick = { onCheckedChange(!checked) }
+                           )
+                           .requiredHeight(ButtonDefaults.MinHeight)
+                           .padding(4.dp),
+    ) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = null,
+        )
+
+        Spacer(Modifier.size(6.dp))
+
+        Text(
+            text = label,
+        )
     }
 }
 
