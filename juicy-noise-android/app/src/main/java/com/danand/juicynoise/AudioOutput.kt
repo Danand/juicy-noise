@@ -91,11 +91,6 @@ class AudioOutput(
                     bufferMonoRight[sampleIndex] = sampleValueMax
                 }
 
-                // TODO: Uncomment when delay effect will be fixed.
-                //for (effect in effects) {
-                //    effect.process(floatArray, bufferSize)
-                //}
-
                 timeElapsedSeconds += bufferSizeMono * sampleTimeStep
 
                 var sampleIndexStereo = 0
@@ -110,6 +105,10 @@ class AudioOutput(
                     bufferStereo[sampleIndexStereo + 1] = (sampleRight * (1 - channelMergeFactor)) + (sampleLeft * channelMergeFactor)
 
                     sampleIndexStereo += 2
+                }
+
+                for (effect in effects) {
+                    effect.process(bufferStereo)
                 }
 
                 audioTrack.write(

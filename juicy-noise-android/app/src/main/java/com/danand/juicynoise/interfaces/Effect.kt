@@ -1,5 +1,5 @@
 package com.danand.juicynoise.interfaces
 
 interface Effect {
-    fun process(buffer: FloatArray, bufferSize: Int)
+    fun process(buffer: FloatArray)
 }

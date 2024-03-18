@@ -8,7 +8,6 @@ import com.danand.juicynoise.composables.AudioBufferSizeTextField
 import com.danand.juicynoise.data.AddressState
 import com.danand.juicynoise.data.AudioBufferSize
 import com.danand.juicynoise.data.Sensors
-import com.danand.juicynoise.effects.EffectDelay
 import com.danand.juicynoise.signalprocessors.SignalProcessorSensors
 import com.danand.juicynoise.ui.theme.JuicyNoiseTheme
 
@@ -175,15 +174,12 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         val signalProcessorSensorsLeft = SignalProcessorSensors(sensorsState, 0)
         val signalProcessorSensorsRight = SignalProcessorSensors(sensorsState, 1)
 
-        val effectDelay = EffectDelay(sensorsState)
-
         audioOutput = AudioOutput(
             arrayOf(
                 signalProcessorSensorsLeft,
                 signalProcessorSensorsRight,
             ),
             arrayOf(
-                effectDelay,
             ),
         )
 
