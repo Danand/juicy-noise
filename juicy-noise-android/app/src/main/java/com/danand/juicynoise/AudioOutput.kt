@@ -56,56 +56,30 @@ class AudioOutput(
             val bufferMonoLeft = FloatArray(bufferSizeMono)
             val bufferMonoRight = FloatArray(bufferSizeMono)
 
-            val sampleTimeStep = 1.0f / samplingRate
-
             var timeElapsedSeconds = 0.0f
 
             while (isActive) {
-                for (sampleIndex in bufferMonoLeft.indices) {
-                    val sampleTime = timeElapsedSeconds + (sampleIndex * sampleTimeStep)
+                processChannel(
+                    0,
+                    samplingRate,
+                    timeElapsedSeconds,
+                    bufferMonoLeft,
+                )
 
-                    var sampleValueMax = 0.0f
+                processChannel(
+                    1,
+                    samplingRate,
+                    timeElapsedSeconds,
+                    bufferMonoRight,
+                )
 
-                    for (signalProcessor in signalProcessors) {
-                        if (signalProcessor.getChannel() == 0) {
-                            val sampleValue = signalProcessor.process(sampleTime)
-                            sampleValueMax = max(sampleValueMax, sampleValue)
-                        }
-                    }
+                timeElapsedSeconds += bufferSizeMono * (1.0f / samplingRate)
 
-                    bufferMonoLeft[sampleIndex] = sampleValueMax
-                }
-
-                for (sampleIndex in bufferMonoRight.indices) {
-                    val sampleTime = timeElapsedSeconds + (sampleIndex * sampleTimeStep)
-
-                    var sampleValueMax = 0.0f
-
-                    for (signalProcessor in signalProcessors) {
-                        if (signalProcessor.getChannel() == 1) {
-                            val sampleValue = signalProcessor.process(sampleTime)
-                            sampleValueMax = max(sampleValueMax, sampleValue)
-                        }
-                    }
-
-                    bufferMonoRight[sampleIndex] = sampleValueMax
-                }
-
-                timeElapsedSeconds += bufferSizeMono * sampleTimeStep
-
-                var sampleIndexStereo = 0
-
-                val channelMergeFactor = 0.125f
-
-                for (sampleIndexMono in bufferMonoLeft.indices) {
-                    val sampleLeft = bufferMonoLeft[sampleIndexMono]
-                    val sampleRight = bufferMonoRight[sampleIndexMono]
-
-                    bufferStereo[sampleIndexStereo] = (sampleLeft * (1 - channelMergeFactor)) + (sampleRight * channelMergeFactor)
-                    bufferStereo[sampleIndexStereo + 1] = (sampleRight * (1 - channelMergeFactor)) + (sampleLeft * channelMergeFactor)
-
-                    sampleIndexStereo += 2
-                }
+                processStereo(
+                    bufferMonoLeft,
+                    bufferMonoRight,
+                    bufferStereo,
+                )
 
                 for (effect in effects) {
                     effect.process(bufferStereo)
@@ -125,5 +99,49 @@ class AudioOutput(
 
     fun stop() {
         scope.cancel()
+    }
+
+    private fun processChannel(
+        channelIndex: Int,
+        samplingRate: Int,
+        time: Float,
+        buffer: FloatArray,
+        ) {
+        val sampleTimeStep = 1.0f / samplingRate
+
+        for (sampleIndex in buffer.indices) {
+            val sampleTime = time + (sampleIndex * sampleTimeStep)
+
+            var sampleValueMax = 0.0f
+
+            for (signalProcessor in this.signalProcessors) {
+                if (signalProcessor.getChannel() == channelIndex) {
+                    val sampleValue = signalProcessor.process(sampleTime)
+                    sampleValueMax = max(sampleValueMax, sampleValue)
+                }
+            }
+
+            buffer[sampleIndex] = sampleValueMax
+        }
+    }
+
+    private fun processStereo(
+        bufferMonoLeft: FloatArray,
+        bufferMonoRight: FloatArray,
+        bufferStereo: FloatArray,
+        ) {
+        var sampleIndexStereo = 0
+
+        val channelMergeFactor = 0.125f
+
+        for (sampleIndexMono in bufferMonoLeft.indices) {
+            val sampleLeft = bufferMonoLeft[sampleIndexMono]
+            val sampleRight = bufferMonoRight[sampleIndexMono]
+
+            bufferStereo[sampleIndexStereo] = (sampleLeft * (1 - channelMergeFactor)) + (sampleRight * channelMergeFactor)
+            bufferStereo[sampleIndexStereo + 1] = (sampleRight * (1 - channelMergeFactor)) + (sampleLeft * channelMergeFactor)
+
+            sampleIndexStereo += 2
+        }
     }
 }
