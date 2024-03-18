@@ -100,9 +100,14 @@ class AudioOutput(
 
                 var sampleIndexStereo = 0
 
+                val channelMergeFactor = 0.125f
+
                 for (sampleIndexMono in bufferMonoLeft.indices) {
-                    bufferStereo[sampleIndexStereo] = bufferMonoLeft[sampleIndexMono]
-                    bufferStereo[sampleIndexStereo + 1] = bufferMonoRight[sampleIndexMono]
+                    val sampleLeft = bufferMonoLeft[sampleIndexMono]
+                    val sampleRight = bufferMonoRight[sampleIndexMono]
+
+                    bufferStereo[sampleIndexStereo] = (sampleLeft * (1 - channelMergeFactor)) + (sampleRight * channelMergeFactor)
+                    bufferStereo[sampleIndexStereo + 1] = (sampleRight * (1 - channelMergeFactor)) + (sampleLeft * channelMergeFactor)
 
                     sampleIndexStereo += 2
                 }
