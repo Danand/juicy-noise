@@ -11,6 +11,7 @@ import com.danand.juicynoise.synths.SynthSine
 import com.danand.juicynoise.synths.SynthSquare
 
 import androidx.compose.runtime.MutableState
+import com.danand.juicynoise.data.SettingsState
 
 import kotlin.math.abs
 import kotlin.math.max
@@ -21,6 +22,7 @@ import kotlin.random.Random
 class SignalProcessorSensors(
     private val sensorsState: MutableState<Sensors>,
     private val channel: Int,
+    private val settingsState: SettingsState,
     ) : SignalProcessor {
     private val sensorGetters: Array<() -> Float> = arrayOf(
         { sensorsState.value.longitude },
@@ -107,7 +109,7 @@ class SignalProcessorSensors(
             this.sensorsState.value.angularSpeedZ,
         )
 
-        if (angularSpeedMagnitude > 10) {
+        if (angularSpeedMagnitude > settingsState.sensitivityA.value) {
             randomizeMapping(this.mapping, this.mappingIndices)
         }
 
@@ -127,12 +129,12 @@ class SignalProcessorSensors(
 
             val sensorValue = sensorGetter()
 
-            if (accelerationMagnitude > 40) {
+            if (accelerationMagnitude > settingsState.sensitivityB.value) {
                 this.frequenciesMax[index] = weightedChoice(frequencyMaxToWeights)
             }
 
-            if (angularSpeedMagnitude > 15) {
-                weirdEffectDivider = Random.nextInt(1, 31)
+            if (angularSpeedMagnitude > settingsState.sensitivityC.value) {
+                weirdEffectDivider = Random.nextInt(1, settingsState.rhythmSeedA.value)
             }
 
             val sensorGetterMinValue = this.sensorGetterMinValues[this.mapping[index]]
@@ -151,11 +153,11 @@ class SignalProcessorSensors(
                 sensorValue,
                 sensorGetterMinValue,
                 sensorGetterMaxValue,
-                35.0f,
+                settingsState.frequencyMin.value,
                 frequencyMax,
             ).toInt()
 
-            if (accelerationMagnitude > 30) {
+            if (accelerationMagnitude > settingsState.sensitivityD.value) {
                 randomizePhases(this.phases) {
                     initRandomizedPhases()
                 }
@@ -173,7 +175,7 @@ class SignalProcessorSensors(
             sampleValueTotal = max(sampleValueTotal, sampleValueSynth)
         }
 
-        if ((this.sensorsState.value.light % (this.sensorsState.value.magneticZ * 10.0f)).toInt() % 3 == 0) {
+        if ((this.sensorsState.value.light % (this.sensorsState.value.magneticZ * 10.0f)).toInt() % settingsState.rhythmSeedB.value == 0) {
             val sampleValueRandom = Random.nextFloat() * amplitudeMax
             sampleValueTotal = max(sampleValueTotal, sampleValueRandom)
         }

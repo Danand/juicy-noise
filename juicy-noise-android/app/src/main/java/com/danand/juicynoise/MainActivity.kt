@@ -79,6 +79,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.text.isDigitsOnly
+import com.danand.juicynoise.data.SettingsState
 
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -109,6 +110,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private val audioBufferSizeState = mutableStateOf(AudioBufferSize.SIZE_256)
     private val sampleRateState = mutableStateOf(44100)
     private val isShowingSensorsState = mutableStateOf(false)
+    private val settingsState = createSettingsState()
 
     private lateinit var sensorManager: SensorManager
     private lateinit var audioOutput: AudioOutput
@@ -171,8 +173,15 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         pressure = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE)
         proximity = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
 
-        val signalProcessorSensorsLeft = SignalProcessorSensors(sensorsState, 0)
-        val signalProcessorSensorsRight = SignalProcessorSensors(sensorsState, 1)
+        val signalProcessorSensorsLeft = SignalProcessorSensors(
+            sensorsState,
+            0,
+            settingsState)
+
+        val signalProcessorSensorsRight = SignalProcessorSensors(
+            sensorsState,
+            1,
+            settingsState)
 
         audioOutput = AudioOutput(
             arrayOf(
@@ -181,6 +190,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             ),
             arrayOf(
             ),
+            settingsState,
         )
 
         setContent {
@@ -197,6 +207,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                     connectivityManager,
                     audioOutput,
                     isShowingSensorsState,
+                    settingsState,
                 )
             }
         }
@@ -332,6 +343,7 @@ fun TabScreen(
     connectivityManager: ConnectivityManager,
     audioOutput: AudioOutput,
     isShowingSensorsState: MutableState<Boolean>,
+    settingsState: SettingsState,
 ) {
     var tabIndex by remember { mutableStateOf(0) }
 
@@ -359,6 +371,7 @@ fun TabScreen(
                 locationClient,
                 audioOutput,
                 isShowingSensorsState,
+                settingsState,
             )
             1 -> TabVST(
                 ipState,
@@ -386,17 +399,21 @@ fun TabStandalone(
     locationClient: FusedLocationProviderClient,
     audioOutput: AudioOutput,
     isShowingSensorsState: MutableState<Boolean>,
+    settingsState: SettingsState,
 ) {
     Column(
-        modifier = Modifier
-            .padding(36.dp)
-            .verticalScroll(rememberScrollState()),
+        modifier = Modifier.padding(36.dp)
+                           .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         AudioSettings(
             sampleRateState,
             audioBufferSizeState,
+        )
+
+        AudioSettingsAdjustments(
+            settingsState,
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -451,9 +468,8 @@ fun TabVST(
     }
 
     Column(
-        modifier = Modifier
-            .padding(36.dp)
-            .verticalScroll(rememberScrollState()),
+        modifier = Modifier.padding(36.dp)
+                           .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -471,8 +487,9 @@ fun TabVST(
                 keyboardType = KeyboardType.NumberPassword
             ),
             isError = checkIsValidIp(ipState.value) == false,
-            modifier = Modifier.fillMaxWidth()
-                               .height(72.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -558,6 +575,113 @@ fun AudioSettings(
     AudioBufferSizeTextField(
         selectedBufferSize = audioBufferSizeState.value,
         onItemSelected = { audioBufferSizeState.value = it }
+    )
+}
+
+@Composable
+fun AudioSettingsAdjustments(
+    settingsState: SettingsState,
+) {
+    Spacer(modifier = Modifier.height(16.dp))
+
+    OutlinedTextField(
+        value = settingsState.sensitivityA.value.toString(),
+        onValueChange = {
+            settingsState.sensitivityA.value = it.toFloat()
+        },
+        label = {
+            Text("Sensitivity A")
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+        ),
+        modifier = Modifier.fillMaxWidth()
+                           .height(72.dp),
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    OutlinedTextField(
+        value = settingsState.sensitivityB.value.toString(),
+        onValueChange = {
+            settingsState.sensitivityB.value = it.toFloat()
+        },
+        label = {
+            Text("Sensitivity B")
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+        ),
+        modifier = Modifier.fillMaxWidth()
+                           .height(72.dp),
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    OutlinedTextField(
+        value = settingsState.sensitivityC.value.toString(),
+        onValueChange = {
+            settingsState.sensitivityC.value = it.toFloat()
+        },
+        label = {
+            Text("Sensitivity C")
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+        ),
+        modifier = Modifier.fillMaxWidth()
+                           .height(72.dp),
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    OutlinedTextField(
+        value = settingsState.sensitivityD.value.toString(),
+        onValueChange = {
+            settingsState.sensitivityD.value = it.toFloat()
+        },
+        label = {
+            Text("Sensitivity D")
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+        ),
+        modifier = Modifier.fillMaxWidth()
+                           .height(72.dp),
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    OutlinedTextField(
+        value = settingsState.rhythmSeedA.value.toString(),
+        onValueChange = {
+            settingsState.rhythmSeedA.value = it.toInt()
+        },
+        label = {
+            Text("Rhythm Seed A")
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+        ),
+        modifier = Modifier.fillMaxWidth()
+                           .height(72.dp),
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    OutlinedTextField(
+        value = settingsState.rhythmSeedB.value.toString(),
+        onValueChange = {
+            settingsState.rhythmSeedB.value = it.toInt()
+        },
+        label = {
+            Text("Rhythm Seed B")
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+        ),
+        modifier = Modifier.fillMaxWidth()
+                           .height(72.dp),
     )
 }
 
@@ -843,6 +967,17 @@ fun LabelledCheckBox(
 fun createAddressState(): AddressState = AddressState(
     ip = mutableStateOf("192.168.0.128"),
     port = mutableStateOf(6660u),
+)
+
+fun createSettingsState(): SettingsState = SettingsState(
+    stereoSeparation = mutableStateOf(0.875f),
+    frequencyMin = mutableStateOf(35.0f),
+    sensitivityA = mutableStateOf(10.0f),
+    sensitivityB = mutableStateOf(40.0f),
+    sensitivityC = mutableStateOf(15.0f),
+    sensitivityD = mutableStateOf(30.0f),
+    rhythmSeedA = mutableStateOf(31),
+    rhythmSeedB = mutableStateOf(3),
 )
 
 fun startSendingSensors(

@@ -1,5 +1,6 @@
 package com.danand.juicynoise
 
+import com.danand.juicynoise.data.SettingsState
 import com.danand.juicynoise.interfaces.SignalProcessor
 import com.danand.juicynoise.interfaces.Effect
 
@@ -19,6 +20,7 @@ import kotlinx.coroutines.launch
 class AudioOutput(
     private val signalProcessors: Array<SignalProcessor>,
     private val effects: Array<Effect>,
+    private val settingsState: SettingsState,
     ) {
     private lateinit var scope: CoroutineScope
 
@@ -79,6 +81,7 @@ class AudioOutput(
                     bufferMonoLeft,
                     bufferMonoRight,
                     bufferStereo,
+                    settingsState,
                 )
 
                 for (effect in effects) {
@@ -129,10 +132,11 @@ class AudioOutput(
         bufferMonoLeft: FloatArray,
         bufferMonoRight: FloatArray,
         bufferStereo: FloatArray,
+        settingsState: SettingsState,
         ) {
         var sampleIndexStereo = 0
 
-        val channelMergeFactor = 0.125f
+        val channelMergeFactor = 1.0f - settingsState.stereoSeparation.value;
 
         for (sampleIndexMono in bufferMonoLeft.indices) {
             val sampleLeft = bufferMonoLeft[sampleIndexMono]
