@@ -145,6 +145,10 @@ class SignalProcessorSensors(
 
             var frequencyMax = this.frequenciesMax[index]
 
+            if (weirdEffectDivider == 0) {
+                weirdEffectDivider = 1
+            }
+
             if ((sensorValue * 10000.0f).toInt() % weirdEffectDivider == 0) {
                 frequencyMax += (this.frequenciesMax.random() * tanh(time))
             }
@@ -175,7 +179,21 @@ class SignalProcessorSensors(
             sampleValueTotal = max(sampleValueTotal, sampleValueSynth)
         }
 
-        if ((this.sensorsState.value.light % (this.sensorsState.value.magneticZ * 10.0f)).toInt() % settingsState.rhythmSeedB.value == 0) {
+        var magneticMultiplied = this.sensorsState.value.magneticZ * 10.0f
+
+        if (magneticMultiplied == 0.0f) {
+            magneticMultiplied = 1.0f
+        }
+
+        val magicNumberLightMagnetic = (this.sensorsState.value.light % magneticMultiplied).toInt()
+
+        var rhythmSeedB = settingsState.rhythmSeedB.value
+
+        if (rhythmSeedB == 0) {
+            rhythmSeedB = 1
+        }
+
+        if (magicNumberLightMagnetic % rhythmSeedB == 0) {
             val sampleValueRandom = Random.nextFloat() * amplitudeMax
             sampleValueTotal = max(sampleValueTotal, sampleValueRandom)
         }
