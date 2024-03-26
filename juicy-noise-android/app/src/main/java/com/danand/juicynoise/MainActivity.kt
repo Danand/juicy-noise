@@ -630,7 +630,11 @@ fun InputNumber(
     OutlinedTextField(
         value = getter(),
         onValueChange = {
-            setter(it)
+            if (it.isEmpty()) {
+                setter("0")
+            } else {
+                setter(it)
+            }
         },
         label = {
             Text(label)
