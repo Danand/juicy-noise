@@ -133,8 +133,14 @@ class SignalProcessorSensors(
                 this.frequenciesMax[index] = weightedChoice(frequencyMaxToWeights)
             }
 
+            var rhythmSeedA = settingsState.rhythmSeedA.value
+
+            if (rhythmSeedA < 2) {
+                rhythmSeedA = 2
+            }
+
             if (angularSpeedMagnitude > settingsState.sensitivityC.value) {
-                weirdEffectDivider = Random.nextInt(1, settingsState.rhythmSeedA.value)
+                weirdEffectDivider = Random.nextInt(1, rhythmSeedA)
             }
 
             val sensorGetterMinValue = this.sensorGetterMinValues[this.mapping[index]]
