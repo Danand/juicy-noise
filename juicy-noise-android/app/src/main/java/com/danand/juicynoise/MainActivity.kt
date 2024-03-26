@@ -582,100 +582,58 @@ fun AudioSettings(
 fun AudioSettingsAdjustments(
     settingsState: SettingsState,
 ) {
-    Spacer(modifier = Modifier.height(16.dp))
-
-    OutlinedTextField(
-        value = settingsState.sensitivityA.value.toString(),
-        onValueChange = {
-            settingsState.sensitivityA.value = it.toFloat()
-        },
-        label = {
-            Text("Sensitivity A")
-        },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number,
-        ),
-        modifier = Modifier.fillMaxWidth()
-                           .height(72.dp),
+    InputNumber(
+        "Sensitivity A",
+        { settingsState.sensitivityA.value.toString() },
+        { settingsState.sensitivityA.value = it.toFloat() }
     )
 
-    Spacer(modifier = Modifier.height(16.dp))
-
-    OutlinedTextField(
-        value = settingsState.sensitivityB.value.toString(),
-        onValueChange = {
-            settingsState.sensitivityB.value = it.toFloat()
-        },
-        label = {
-            Text("Sensitivity B")
-        },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number,
-        ),
-        modifier = Modifier.fillMaxWidth()
-                           .height(72.dp),
+    InputNumber(
+        "Sensitivity B",
+        { settingsState.sensitivityB.value.toString() },
+        { settingsState.sensitivityB.value = it.toFloat() }
     )
 
-    Spacer(modifier = Modifier.height(16.dp))
-
-    OutlinedTextField(
-        value = settingsState.sensitivityC.value.toString(),
-        onValueChange = {
-            settingsState.sensitivityC.value = it.toFloat()
-        },
-        label = {
-            Text("Sensitivity C")
-        },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number,
-        ),
-        modifier = Modifier.fillMaxWidth()
-                           .height(72.dp),
+    InputNumber(
+        "Sensitivity C",
+        { settingsState.sensitivityC.value.toString() },
+        { settingsState.sensitivityC.value = it.toFloat() }
     )
 
-    Spacer(modifier = Modifier.height(16.dp))
-
-    OutlinedTextField(
-        value = settingsState.sensitivityD.value.toString(),
-        onValueChange = {
-            settingsState.sensitivityD.value = it.toFloat()
-        },
-        label = {
-            Text("Sensitivity D")
-        },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number,
-        ),
-        modifier = Modifier.fillMaxWidth()
-                           .height(72.dp),
+    InputNumber(
+        "Sensitivity D",
+        { settingsState.sensitivityD.value.toString() },
+        { settingsState.sensitivityD.value = it.toFloat() }
     )
 
-    Spacer(modifier = Modifier.height(16.dp))
-
-    OutlinedTextField(
-        value = settingsState.rhythmSeedA.value.toString(),
-        onValueChange = {
-            settingsState.rhythmSeedA.value = it.toInt()
-        },
-        label = {
-            Text("Rhythm Seed A")
-        },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number,
-        ),
-        modifier = Modifier.fillMaxWidth()
-                           .height(72.dp),
+    InputNumber(
+        "Rhythm Seed A",
+        { settingsState.rhythmSeedA.value.toString() },
+        { settingsState.rhythmSeedA.value = it.toInt() }
     )
 
+    InputNumber(
+        "Rhythm Seed B",
+        { settingsState.rhythmSeedB.value.toString() },
+        { settingsState.rhythmSeedB.value = it.toInt() }
+    )
+}
+
+@Composable
+fun InputNumber(
+    label: String,
+    getter: () -> String,
+    setter: (stringValue: String) -> Unit
+) {
     Spacer(modifier = Modifier.height(16.dp))
 
     OutlinedTextField(
-        value = settingsState.rhythmSeedB.value.toString(),
+        value = getter(),
         onValueChange = {
-            settingsState.rhythmSeedB.value = it.toInt()
+            setter(it)
         },
         label = {
-            Text("Rhythm Seed B")
+            Text(label)
         },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number,
