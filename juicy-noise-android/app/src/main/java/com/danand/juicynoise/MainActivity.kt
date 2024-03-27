@@ -114,6 +114,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private val audioBufferSizeState = mutableStateOf(AudioBufferSize.SIZE_256)
     private val sampleRateState = mutableStateOf(44100)
     private val isShowingSensorsState = mutableStateOf(false)
+    private val isShowingAudioSettings = mutableStateOf(false)
     private val settingsState = createSettingsState()
 
     private lateinit var sensorManager: SensorManager
@@ -211,6 +212,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                     connectivityManager,
                     audioOutput,
                     isShowingSensorsState,
+                    isShowingAudioSettings,
                     settingsState,
                 )
             }
@@ -347,6 +349,7 @@ fun TabScreen(
     connectivityManager: ConnectivityManager,
     audioOutput: AudioOutput,
     isShowingSensorsState: MutableState<Boolean>,
+    isShowingAudioSettings: MutableState<Boolean>,
     settingsState: SettingsState,
 ) {
     var tabIndex by remember { mutableStateOf(0) }
@@ -375,6 +378,7 @@ fun TabScreen(
                 locationClient,
                 audioOutput,
                 isShowingSensorsState,
+                isShowingAudioSettings,
                 settingsState,
             )
             1 -> TabVST(
@@ -403,6 +407,7 @@ fun TabStandalone(
     locationClient: FusedLocationProviderClient,
     audioOutput: AudioOutput,
     isShowingSensorsState: MutableState<Boolean>,
+    isShowingAudioSettings: MutableState<Boolean>,
     settingsState: SettingsState,
 ) {
     Column(
@@ -436,6 +441,7 @@ fun TabStandalone(
 
         AudioSettingsAdjustments(
             settingsState,
+            isShowingAudioSettings,
         )
 
         SensorValues(
@@ -584,61 +590,74 @@ fun AudioSettings(
 @Composable
 fun AudioSettingsAdjustments(
     settingsState: SettingsState,
+    isShowingAudioSettings: MutableState<Boolean>,
 ) {
-    InputFloat(
-        "Stereo Separation",
-        settingsState.stereoSeparation.value
-    ) {
-        settingsState.stereoSeparation.value = it
-    }
+    Spacer(modifier = Modifier.height(24.dp))
 
-    InputFloat(
-        "Frequency Min",
-        settingsState.frequencyMin.value
-    ) {
-        settingsState.frequencyMin.value = it
-    }
+    LabelledCheckBox(
+        label = "Show settings",
+        checked = isShowingAudioSettings.value,
+        onCheckedChange = {
+            isShowingAudioSettings.value = it
+        },
+    )
 
-    InputFloat(
-        "Sensitivity A",
-        settingsState.sensitivityA.value
-    ) {
-        settingsState.sensitivityA.value = it
-    }
+    if (isShowingAudioSettings.value) {
+        InputFloat(
+            "Stereo Separation",
+            settingsState.stereoSeparation.value
+        ) {
+            settingsState.stereoSeparation.value = it
+        }
 
-    InputFloat(
-        "Sensitivity B",
-        settingsState.sensitivityB.value,
-    ) {
-        settingsState.sensitivityB.value = it
-    }
+        InputFloat(
+            "Frequency Min",
+            settingsState.frequencyMin.value
+        ) {
+            settingsState.frequencyMin.value = it
+        }
 
-    InputFloat(
-        "Sensitivity C",
-        settingsState.sensitivityC.value,
-    ) {
-        settingsState.sensitivityC.value = it
-    }
+        InputFloat(
+            "Sensitivity A",
+            settingsState.sensitivityA.value
+        ) {
+            settingsState.sensitivityA.value = it
+        }
 
-    InputFloat(
-        "Sensitivity D",
-        settingsState.sensitivityD.value,
-    ) {
-        settingsState.sensitivityD.value = it
-    }
+        InputFloat(
+            "Sensitivity B",
+            settingsState.sensitivityB.value,
+        ) {
+            settingsState.sensitivityB.value = it
+        }
 
-    InputInt(
-        "Rhythm Seed A",
-        settingsState.rhythmSeedA.value,
-    ) {
-        settingsState.rhythmSeedA.value = it
-    }
+        InputFloat(
+            "Sensitivity C",
+            settingsState.sensitivityC.value,
+        ) {
+            settingsState.sensitivityC.value = it
+        }
 
-    InputInt(
-        "Rhythm Seed B",
-        settingsState.rhythmSeedB.value,
-    ) {
-        settingsState.rhythmSeedB.value = it
+        InputFloat(
+            "Sensitivity D",
+            settingsState.sensitivityD.value,
+        ) {
+            settingsState.sensitivityD.value = it
+        }
+
+        InputInt(
+            "Rhythm Seed A",
+            settingsState.rhythmSeedA.value,
+        ) {
+            settingsState.rhythmSeedA.value = it
+        }
+
+        InputInt(
+            "Rhythm Seed B",
+            settingsState.rhythmSeedB.value,
+        ) {
+            settingsState.rhythmSeedB.value = it
+        }
     }
 }
 
