@@ -416,7 +416,7 @@ fun TabStandalone(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        AudioSettings(
+        BufferSettings(
             sampleRateState,
             audioBufferSizeState,
         )
@@ -439,7 +439,7 @@ fun TabStandalone(
             )
         }
 
-        AudioSettingsAdjustments(
+        AudioSettings(
             settingsState,
             isShowingAudioSettings,
         )
@@ -522,7 +522,7 @@ fun TabVST(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        AudioSettings(
+        BufferSettings(
             sampleRateState,
             audioBufferSizeState,
         )
@@ -560,7 +560,7 @@ fun TabVST(
 }
 
 @Composable
-fun AudioSettings(
+fun BufferSettings(
     sampleRateState: MutableState<Int>,
     audioBufferSizeState: MutableState<AudioBufferSize>,
 ) {
@@ -588,7 +588,7 @@ fun AudioSettings(
 }
 
 @Composable
-fun AudioSettingsAdjustments(
+fun AudioSettings(
     settingsState: SettingsState,
     isShowingAudioSettings: MutableState<Boolean>,
 ) {
