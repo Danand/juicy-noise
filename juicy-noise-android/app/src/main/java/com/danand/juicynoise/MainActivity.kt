@@ -1,5 +1,6 @@
 @file:OptIn(
     ExperimentalMaterial3Api::class,
+    ExperimentalComposeUiApi::class,
 )
 
 package com.danand.juicynoise
@@ -48,6 +49,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
@@ -71,9 +73,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
@@ -487,9 +491,8 @@ fun TabVST(
                 keyboardType = KeyboardType.NumberPassword
             ),
             isError = checkIsValidIp(ipState.value) == false,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(72.dp),
+            modifier = Modifier.fillMaxWidth()
+                               .height(72.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -582,68 +585,131 @@ fun AudioSettings(
 fun AudioSettingsAdjustments(
     settingsState: SettingsState,
 ) {
-    InputNumber(
+    InputFloat(
         "Sensitivity A",
-        { settingsState.sensitivityA.value.toString() },
-        { settingsState.sensitivityA.value = it.toFloat() }
-    )
+        settingsState.sensitivityA.value
+    ) {
+        settingsState.sensitivityA.value = it
+    }
 
-    InputNumber(
+    InputFloat(
         "Sensitivity B",
-        { settingsState.sensitivityB.value.toString() },
-        { settingsState.sensitivityB.value = it.toFloat() }
-    )
+        settingsState.sensitivityB.value,
+    ) {
+        settingsState.sensitivityB.value = it
+    }
 
-    InputNumber(
+    InputFloat(
         "Sensitivity C",
-        { settingsState.sensitivityC.value.toString() },
-        { settingsState.sensitivityC.value = it.toFloat() }
-    )
+        settingsState.sensitivityC.value,
+    ) {
+        settingsState.sensitivityC.value = it
+    }
 
-    InputNumber(
+    InputFloat(
         "Sensitivity D",
-        { settingsState.sensitivityD.value.toString() },
-        { settingsState.sensitivityD.value = it.toFloat() }
-    )
+        settingsState.sensitivityD.value,
+    ) {
+        settingsState.sensitivityD.value = it
+    }
 
-    InputNumber(
+    InputInt(
         "Rhythm Seed A",
-        { settingsState.rhythmSeedA.value.toString() },
-        { settingsState.rhythmSeedA.value = it.toInt() }
-    )
+        settingsState.rhythmSeedA.value,
+    ) {
+        settingsState.rhythmSeedA.value = it
+    }
 
-    InputNumber(
+    InputInt(
         "Rhythm Seed B",
-        { settingsState.rhythmSeedB.value.toString() },
-        { settingsState.rhythmSeedB.value = it.toInt() }
+        settingsState.rhythmSeedB.value,
+    ) {
+        settingsState.rhythmSeedB.value = it
+    }
+}
+
+@Composable
+fun InputInt(
+    label: String,
+    value: Int,
+    setter: (Int) -> Unit,
+) {
+    InputParse(
+        label = label,
+        value = value,
+        setter = setter,
+        parser = { it.toIntOrNull() },
+        keyboardType = KeyboardType.NumberPassword,
     )
 }
 
 @Composable
-fun InputNumber(
+fun InputFloat(
     label: String,
-    getter: () -> String,
-    setter: (stringValue: String) -> Unit
+    value: Float,
+    setter: (Float) -> Unit,
+) {
+    InputParse(
+        label = label,
+        value = value,
+        setter = setter,
+        parser = { it.toFloatOrNull() },
+        keyboardType = KeyboardType.Number,
+    )
+}
+
+@Composable
+fun <T>InputParse(
+    label: String,
+    value: T,
+    setter: (T) -> Unit,
+    parser: (String) -> T?,
+    keyboardType: KeyboardType,
 ) {
     Spacer(modifier = Modifier.height(16.dp))
 
+    var input by remember { mutableStateOf(value.toString()) }
+    var isValid by remember { mutableStateOf(true) }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     OutlinedTextField(
-        value = getter(),
+        value = input,
         onValueChange = {
-            if (it.isEmpty()) {
-                setter("0")
-            } else {
-                setter(it)
-            }
+            input = it
+            isValid = parser(it) != null
         },
+        keyboardActions = KeyboardActions(
+            onDone = {
+                val valueParsed = parser(input)
+
+                if (valueParsed == null) {
+                    input = value.toString()
+                }
+                else {
+                    setter(valueParsed)
+                    input = valueParsed.toString()
+                }
+
+                keyboardController?.hide()
+            }
+        ),
         label = {
             Text(label)
         },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number,
+        singleLine = true,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = keyboardType,
         ),
         modifier = Modifier.fillMaxWidth()
                            .height(72.dp),
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor = if (isValid) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.error
+            }
+        )
     )
 }
 
