@@ -416,10 +416,6 @@ fun TabStandalone(
             audioBufferSizeState,
         )
 
-        AudioSettingsAdjustments(
-            settingsState,
-        )
-
         Spacer(modifier = Modifier.height(24.dp))
 
         if (isRunningState.value) {
@@ -437,6 +433,10 @@ fun TabStandalone(
                 audioOutput,
             )
         }
+
+        AudioSettingsAdjustments(
+            settingsState,
+        )
 
         SensorValues(
             sensorsState,
