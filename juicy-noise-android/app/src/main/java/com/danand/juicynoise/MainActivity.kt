@@ -1002,15 +1002,15 @@ fun LabelledCheckBox(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .clip(MaterialTheme.shapes.small)
-            .clickable(
-                indication = rememberRipple(color = MaterialTheme.colorScheme.primary),
-                interactionSource = remember { MutableInteractionSource() },
-                onClick = { onCheckedChange(!checked) }
-            )
-            .requiredHeight(ButtonDefaults.MinHeight)
-            .padding(4.dp),
+        horizontalArrangement = Arrangement.Start,
+        modifier = modifier.clip(MaterialTheme.shapes.small)
+                           .clickable(
+                               indication = rememberRipple(color = MaterialTheme.colorScheme.primary),
+                               interactionSource = remember { MutableInteractionSource() },
+                               onClick = { onCheckedChange(!checked) },
+                           )
+                           .requiredHeight(ButtonDefaults.MinHeight)
+                           .padding(4.dp),
     ) {
         Checkbox(
             checked = checked,
