@@ -8,6 +8,7 @@ import com.danand.juicynoise.composables.AudioBufferSizeTextField
 import com.danand.juicynoise.data.AddressState
 import com.danand.juicynoise.data.AudioBufferSize
 import com.danand.juicynoise.data.Sensors
+import com.danand.juicynoise.data.SettingsState
 import com.danand.juicynoise.signalprocessors.SignalProcessorSensors
 import com.danand.juicynoise.ui.theme.JuicyNoiseTheme
 
@@ -79,7 +80,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.text.isDigitsOnly
-import com.danand.juicynoise.data.SettingsState
 
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices

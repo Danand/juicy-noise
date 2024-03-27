@@ -1,6 +1,7 @@
 package com.danand.juicynoise.signalprocessors
 
 import com.danand.juicynoise.data.Sensors
+import com.danand.juicynoise.data.SettingsState
 import com.danand.juicynoise.interfaces.SignalProcessor
 import com.danand.juicynoise.interfaces.Synth
 import com.danand.juicynoise.utils.magnitude
@@ -11,7 +12,6 @@ import com.danand.juicynoise.synths.SynthSine
 import com.danand.juicynoise.synths.SynthSquare
 
 import androidx.compose.runtime.MutableState
-import com.danand.juicynoise.data.SettingsState
 
 import kotlin.math.abs
 import kotlin.math.max
