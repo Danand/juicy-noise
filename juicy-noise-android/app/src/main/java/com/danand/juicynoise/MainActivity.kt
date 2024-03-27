@@ -564,20 +564,12 @@ fun BufferSettings(
     sampleRateState: MutableState<Int>,
     audioBufferSizeState: MutableState<AudioBufferSize>,
 ) {
-    OutlinedTextField(
-        value = sampleRateState.value.toString(),
-        onValueChange = {
-            sampleRateState.value = it.toInt()
-        },
-        label = {
-            Text("Sample Rate")
-        },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number,
-        ),
-        modifier = Modifier.fillMaxWidth()
-                           .height(72.dp),
-    )
+    InputInt(
+        "Sample Rate",
+        sampleRateState.value
+    ) {
+        sampleRateState.value = it
+    }
 
     Spacer(modifier = Modifier.height(16.dp))
 
