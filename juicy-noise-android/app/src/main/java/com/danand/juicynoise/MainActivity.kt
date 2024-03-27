@@ -586,6 +586,20 @@ fun AudioSettingsAdjustments(
     settingsState: SettingsState,
 ) {
     InputFloat(
+        "Stereo Separation",
+        settingsState.stereoSeparation.value
+    ) {
+        settingsState.stereoSeparation.value = it
+    }
+
+    InputFloat(
+        "Frequency Min",
+        settingsState.frequencyMin.value
+    ) {
+        settingsState.frequencyMin.value = it
+    }
+
+    InputFloat(
         "Sensitivity A",
         settingsState.sensitivityA.value
     ) {
