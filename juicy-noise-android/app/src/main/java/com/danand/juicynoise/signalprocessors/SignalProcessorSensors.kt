@@ -1,5 +1,6 @@
 package com.danand.juicynoise.signalprocessors
 
+import com.danand.juicynoise.configs.frequencyMaxToWeights
 import com.danand.juicynoise.data.Sensors
 import com.danand.juicynoise.data.SettingsState
 import com.danand.juicynoise.interfaces.SignalProcessor
@@ -80,17 +81,6 @@ class SignalProcessorSensors(
     private val sensorGetterMinValues = FloatArray(this.sensorGetters.count())
 
     private val sensorGetterMaxValues = FloatArray(this.sensorGetters.count())
-
-    private val frequencyMaxToWeights = mapOf(
-        30.0f to 0.2,
-        50.0f to 0.3,
-        75.0f to 0.5,
-        110.0f to 0.3,
-        250.0f to 0.5,
-        650.0f to 0.3,
-        1000.0f to 0.1,
-        9000.0f to 0.05,
-    )
 
     private var frequenciesMax: Array<Float> = Array(this.synths.count()) {
         Random.nextInt(35, 70).toFloat()
