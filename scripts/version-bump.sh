@@ -14,7 +14,12 @@ major_minor="$(echo "${tag_latest}" | awk -F '.' '{ print $1"."$2 }')"
 
 tag_new="${major_minor}.${patch_new}"
 
-version_code_latest="$(cat "${script_dir}/../juicy-noise-android/app/build.gradle" | grep -Po "\s*versionCode\s*\K\d*")"
+version_code_latest="$( \
+  cat "${script_dir}/../juicy-noise-android/app/build.gradle" \
+  | grep -o "\s*versionCode\s*\d*" \
+  | awk -F ' ' '{ print $NF }' \
+)"
+
 version_code_new=$(( version_code_latest + 1 ))
 
 export VERSION_LAST="${tag_latest}"
